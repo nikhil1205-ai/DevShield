@@ -1,0 +1,34 @@
+/* Full app container */
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top navbar */
+.app-shell > nav {
+  height: 64px;
+  flex-shrink: 0;
+}
+
+/* Below navbar */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.app-body > .sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #0d1117;
+}
+
+/* Main content (Dashboard) */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: #0b0f1a;
+}

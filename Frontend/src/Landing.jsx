@@ -1,6 +1,6 @@
 import React from 'react';
-import './Landing.css';
-
+import './styles/Landing.css';
+import {Link} from "react-router-dom"
 const Landing = () => {
   return (
     <div className="shieldnet-app">
@@ -20,7 +20,7 @@ const Landing = () => {
           </div>
           <div className="nav-auth">
             <button className="btn-ghost">Login</button>
-            <button className="btn-neon">Get Started</button>
+            <Link className="btn-neon" to="/dash">Get Started</Link>
           </div>
         </div>
       </nav>
