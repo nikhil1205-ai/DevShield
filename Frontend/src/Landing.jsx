@@ -19,9 +19,10 @@ const Landing = () => {
             <a href="#privacy">Privacy</a>
           </div>
           <div className="nav-auth">
-            <button className="btn-ghost">Login</button>
-            <Link className="btn-neon" to="/dash">Get Started</Link>
+            <button className="btn btn-ghost">Login</button>
+            <Link className="btn btn-neon" to="/dash">Get Started</Link>
           </div>
+
         </div>
       </nav>
 
@@ -33,9 +34,14 @@ const Landing = () => {
           <h1>Secure your code <br/><span className="text-gradient">Without the complexity</span></h1>
           <p>ShieldNet scans your projects, detects leaks, and suggests fixes in plain English. Built for students, startups, and developers who just want to ship safe apps.</p>
           <div className="hero-buttons">
-            <button className="btn-neon-large">Scan Your First Project</button>
-            <button className="btn-outline">How it works</button>
+            <button className="btn btn-lg btn-primary">
+              Scan Your First Project
+            </button>
+            <button className="btn btn-lg btn-outline">
+              How it works
+            </button>
           </div>
+
         </div>
       </header>
 

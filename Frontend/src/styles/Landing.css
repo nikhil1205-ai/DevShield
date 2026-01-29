@@ -84,24 +84,18 @@ body {
   background: var(--accent-neon);
   color: var(--bg-dark);
   border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
   box-shadow: 0 0 15px var(--accent-glow);
 }
 
 .btn-ghost {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid var(--border);
   color: var(--text-white);
-  cursor: pointer;
-  margin-right: 1rem;
 }
 
 /* Hero Section */
 .hero {
-  padding: 12rem 2rem 8rem;
+  padding: 8rem 2rem 6rem;
   text-align: center;
   position: relative;
 }
@@ -161,23 +155,19 @@ body {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-white);
-  padding: 1.2rem 2.5rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  margin-left: 1rem;
-  cursor: pointer;
 }
 
 /* Features Section */
 .features {
   background-color: rgba(15, 23, 42, 0.5);
-  padding: 8rem 0;
+  padding: 8rem 0; 
 }
 
 .section-title {
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 4rem;
+  padding: 6rem 0;
 }
 
 .feature-grid {
@@ -249,7 +239,7 @@ body {
 
 /* Privacy Section */
 .privacy-banner {
-  padding: 6rem 2rem;
+  padding: 5rem 2rem;
   text-align: center;
 }
 
@@ -290,4 +280,39 @@ body {
   .steps-wrapper { flex-direction: column; gap: 2rem; }
   .step-arrow { transform: rotate(90deg); }
   .nav-links { display: none; }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-lg {
+  height: 52px;
+  padding: 0 2.5rem;
+  font-size: 1.05rem;
+  border-radius: 10px;
+}
+
+
+.btn-primary {
+  background: var(--accent-neon);
+  color: var(--bg-dark);
+  border: none;
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
