@@ -1,32 +1,7 @@
-/* Deep Bluish Dark Theme */
-:root {
-  --bg-dark: #020617;        /* Very dark navy */
-  --bg-card: #0f172a;        /* Deep blue-gray card */
-  --accent-neon: #38bdf8;    /* Bright sky blue */
-  --accent-glow: rgba(56, 189, 248, 0.3);
-  --text-white: #f8fafc;
-  --text-dim: #94a3b8;
-  --border: #1e293b;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-body {
-  background-color: var(--bg-dark);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--text-white);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
 }
 
 /* Navbar */
@@ -79,19 +54,6 @@ body {
   color: var(--accent-neon);
 }
 
-/* Buttons */
-.btn-neon {
-  background: var(--accent-neon);
-  color: var(--bg-dark);
-  border: none;
-  box-shadow: 0 0 15px var(--accent-glow);
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-white);
-}
 
 /* Hero Section */
 .hero {
@@ -149,12 +111,6 @@ body {
   cursor: pointer;
   box-shadow: 0 0 30px var(--accent-glow);
   transition: 0.3s;
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-white);
 }
 
 /* Features Section */
@@ -282,33 +238,6 @@ body {
   .nav-links { display: none; }
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 44px;
-  padding: 0 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn-lg {
-  height: 52px;
-  padding: 0 2.5rem;
-  font-size: 1.05rem;
-  border-radius: 10px;
-}
-
-
-.btn-primary {
-  background: var(--accent-neon);
-  color: var(--bg-dark);
-  border: none;
-  box-shadow: 0 0 30px var(--accent-glow);
-}
 
 .hero-buttons {
   display: flex;

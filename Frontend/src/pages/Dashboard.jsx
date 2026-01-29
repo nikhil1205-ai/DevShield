@@ -97,8 +97,7 @@ const Dashboard = () => {
       <header className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Shield className="w-8 h-8 text-indigo-500" />
-            Sentinel Dashboard
+             Dashboard
           </h1>
           <p className="text-slate-400 mt-1">Real-time security monitoring & vulnerability assessment</p>
         </div>
