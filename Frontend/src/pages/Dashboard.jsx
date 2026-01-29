@@ -1,128 +1,316 @@
-import React, { useState } from 'react';
-import '../styles/Dashboard.css';
+import React, { useState, useEffect } from 'react';
+import { 
+  Shield, 
+  AlertTriangle, 
+  CheckCircle, 
+  Activity, 
+  History, 
+  Play, 
+  Search 
+} from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
+import AddIcon from '@mui/icons-material/Add';
+import "../styles/Dashboard.css"
 
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import HistoryIcon from '@mui/icons-material/History';
-import FolderZipIcon from '@mui/icons-material/FolderZip';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
+// --- Mock Data ---
+const initialHistory = [
+  { id: 1, date: '2023-10-24', time: '14:30', status: 'Passed', vulns: 0 },
+  { id: 2, date: '2023-10-23', time: '09:15', status: 'Warnings', vulns: 3 },
+  { id: 3, date: '2023-10-22', time: '18:45', status: 'Failed', vulns: 12 },
+  { id: 4, date: '2023-10-21', time: '11:20', status: 'Passed', vulns: 0 },
+];
+
+const chartData = [
+  { name: 'Mon', vulns: 4 },
+  { name: 'Tue', vulns: 2 },
+  { name: 'Wed', vulns: 12 },
+  { name: 'Thu', vulns: 3 },
+  { name: 'Fri', vulns: 5 },
+  { name: 'Sat', vulns: 0 },
+  { name: 'Sun', vulns: 1 },
+];
+
+const severityData = [
+  { name: 'Critical', value: 2, color: '#EF4444' }, // Red
+  { name: 'Moderate', value: 4, color: '#F59E0B' }, // Amber
+  { name: 'Low', value: 8, color: '#3B82F6' },     // Blue
+];
 
 const Dashboard = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [history, setHistory] = useState(initialHistory);
+  const [logs, setLogs] = useState([]);
+
+  // --- 4. Function to Take New Scan ---
+  const handleStartScan = () => {
+    if (isScanning) return;
+    setIsScanning(true);
+    setScanProgress(0);
+    setLogs(['Initializing scanner...', 'Connecting to database...']);
+    
+    // Simulate scanning process
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 10) + 5;
+      if (progress > 100) progress = 100;
+      setScanProgress(progress);
+      
+      // Add fake logs
+      if (progress < 100) {
+        const newLog = `Scanning module ${Math.floor(Math.random() * 9000) + 1000}...`;
+        setLogs(prev => [newLog, ...prev].slice(0, 5));
+      }
+
+      if (progress === 100) {
+        clearInterval(interval);
+        setIsScanning(false);
+        setLogs(prev => ['Scan Complete.', ...prev]);
+        // Add new mock entry to history
+        const newEntry = {
+          id: Date.now(),
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: Math.random() > 0.5 ? 'Passed' : 'Warnings',
+          vulns: Math.floor(Math.random() * 5)
+        };
+        setHistory(prev => [newEntry, ...prev]);
+      }
+    }, 300);
+  };
 
   return (
-    <div className="shieldnet-dashboard">
-        <main className="main-content">
-          
-          {/* 1. WELCOME & SECURITY STATUS */}
-          <section className="dashboard-section welcome-area">
-            <div className="welcome-header">
-              <h1>Welcome back 👋</h1>
-              <p>Here’s the current security health of your application.</p>
-            </div>
-            <div className="health-card-glass">
-              <h3>Security Health Score</h3>
-              <div className="health-viz">
-                <div className="score-circle">
-                  <svg viewBox="0 0 36 36" className="circular-chart">
-                    <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path className="circle-active" strokeDasharray="84, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
-                  <span className="score-number">84</span>
-                </div>
-                <div className="score-info">
-                  <span className="status-badge moderate">Moderate Risk</span>
-                  <p>3 active critical issues</p>
-                </div>
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans selection:bg-indigo-500/30">
+      
+      {/* Header */}
+      <header className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Shield className="w-8 h-8 text-indigo-500" />
+            Sentinel Dashboard
+          </h1>
+          <p className="text-slate-400 mt-1">Real-time security monitoring & vulnerability assessment</p>
+        </div>
+        
+        {/* --- 4. Action Button: Take New Scan --- */}
+        <button className="btn-new-scan-plus">
+          <AddIcon className="plus-icon" />
+          <span>New Scan</span>
+        </button>
+      </header>
+
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+        {/* --- 1. Total Vulnerabilities Found (Stat Card) --- */}
+        <div className="md:col-span-3 bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <AlertTriangle className="w-24 h-24 text-red-500" />
+          </div>
+          <h3 className="text-slate-400 font-medium mb-2">Total Vulnerabilities</h3>
+          <div className="text-4xl font-bold text-white mb-1">24</div>
+          <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded-full">
+            +3 from last week
+          </span>
+        </div>
+
+        {/* --- 2. Last Scan Status (Stat Card) --- */}
+        <div className="md:col-span-3 bg-slate-900 border border-slate-800 p-6 rounded-xl">
+          <h3 className="text-slate-400 font-medium mb-2">Last Scan Status</h3>
+          <div className="flex items-center gap-3">
+            {history[0].status === 'Passed' ? (
+              <CheckCircle className="w-8 h-8 text-emerald-500" />
+            ) : (
+              <AlertTriangle className="w-8 h-8 text-amber-500" />
+            )}
+            <div>
+              <div className={`text-2xl font-bold ${history[0].status === 'Passed' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {history[0].status}
               </div>
-            </div>
-          </section>
-
-          {/* 2. QUICK ACTIONS */}
-          <section className="dashboard-section quick-actions-grid">
-            <div className="action-tile highlight"><RocketLaunchIcon /> <span>Start New Scan</span></div>
-            <div className="action-tile"><HistoryIcon /> <span>View Last Results</span></div>
-            <div className="action-tile"><FolderZipIcon /> <span>Upload Project</span></div>
-            <div className="action-tile"><GitHubIcon /> <span>Connect GitHub</span></div>
-          </section>
-
-          {/* 3. VULNERABILITY SUMMARY */}
-          <section className="dashboard-section summary-grid">
-            <div className="stat-pill crit"><h3>02</h3><p>Critical</p></div>
-            <div className="stat-pill high"><h3>05</h3><p>High</p></div>
-            <div className="stat-pill med"><h3>12</h3><p>Medium</p></div>
-            <div className="stat-pill low"><h3>08</h3><p>Low</p></div>
-          </section>
-
-          {/* 4. RECENT SCANS */}
-          <section className="dashboard-section glass-container">
-            <h3>Recent Scans</h3>
-            <div className="table-responsive">
-              <table className="modern-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Project</th>
-                    <th>Type</th>
-                    <th>Score</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Jan 28, 2026</td>
-                    <td>My Web App</td>
-                    <td>Full Scan</td>
-                    <td><span className="score-tag">84</span></td>
-                    <td><span className="status-pill">Completed</span></td>
-                    <td><button className="btn-link">View Details</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <div className="dashboard-footer-row">
-            {/* 5. RISK INSIGHTS (PLAIN ENGLISH) */}
-            <section className="dashboard-section glass-container insight-panel">
-              <h3>What Needs Attention</h3>
-              <div className="insight-card">
-                <ErrorOutlineIcon className="icon-crit" />
-                <div>
-                  <strong>Broken Auth:</strong> User input is not validated in login API.
-                  <p>Attackers could bypass your login screen.</p>
-                </div>
-              </div>
-              <div className="insight-card">
-                <ErrorOutlineIcon className="icon-high" />
-                <div>
-                  <strong>Data Leak:</strong> Sensitive data is exposed in API response.
-                  <p>Tokens found in JSON metadata.</p>
-                </div>
-              </div>
-            </section>
-
-            <div className="side-column">
-              {/* 6. SECURITY TREND */}
-              <section className="dashboard-section glass-container trend-panel">
-                <h3>Security Trend</h3>
-                <div className="mock-chart">
-                  <div className="chart-bar" style={{height: '45%'}}></div>
-                  <div className="chart-bar" style={{height: '65%'}}></div>
-                  <div className="chart-bar active" style={{height: '84%'}}></div>
-                </div>
-              </section>
-
-              {/* 7. DEVELOPER TIPS */}
-              <section className="dashboard-section glass-container tip-panel">
-                <h3><LightbulbIcon /> Tip of the Day</h3>
-                <p>Always validate and sanitize user input to prevent injection attacks.</p>
-              </section>
+              <div className="text-xs text-slate-500">{history[0].date} at {history[0].time}</div>
             </div>
           </div>
-        </main>
+        </div>
+
+        {/* --- 3. Live Incidents Scanning (Live Feed Widget) --- */}
+        <div className="md:col-span-6 bg-slate-900 border border-slate-800 p-6 rounded-xl flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-slate-400 font-medium flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              Live Terminal
+            </h3>
+            {isScanning && <span className="animate-pulse text-xs text-emerald-400">● Live</span>}
+          </div>
+          
+          <div className="bg-black/50 rounded-lg p-4 font-mono text-sm h-32 overflow-y-auto border border-slate-800/50">
+            {isScanning ? (
+              <div className="space-y-1">
+                {logs.map((log, idx) => (
+                  <div key={idx} className="text-emerald-500/80"> {log}</div>
+                ))}
+                <div className="w-full bg-slate-800 h-1 mt-4 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-500 h-full transition-all duration-300"
+                    style={{ width: `${scanProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-600 italic flex items-center justify-center h-full">
+                System Idle. Waiting for command...
+              </div>
+            )}
+          </div>
+        </div>
+        {/* --- Graph 1: Enhanced Vulnerability Trends --- */}
+        <div className="md:col-span-8 bg-slate-900 border border-slate-800 p-6 rounded-xl">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-white">Vulnerability Trends</h3>
+            <div className="flex gap-2">
+              <span className="flex items-center gap-1 text-xs text-slate-400">
+                <div className="w-2 h-2 rounded-full bg-indigo-500" /> Issues Detected
+              </span>
+            </div>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorVulns" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#64748b" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  dy={10}
+                />
+                <YAxis 
+                  stroke="#64748b" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <Tooltip 
+                  cursor={{ stroke: '#4f46e5', strokeWidth: 2 }}
+                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="vulns" 
+                  stroke="#818cf8" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorVulns)" 
+                  dot={{ r: 4, fill: '#818cf8', strokeWidth: 2, stroke: '#0f172a' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* --- Graph 2: Donut Chart with Center Label --- */}
+        <div className="md:col-span-4 bg-slate-900 border border-slate-800 p-6 rounded-xl relative">
+          <h3 className="text-lg font-semibold text-white mb-2">Severity Breakdown</h3>
+          <div className="h-72 w-full flex items-center justify-center relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={severityData}
+                  innerRadius={75}
+                  outerRadius={95}
+                  paddingAngle={8}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {severityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={10} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* CENTER OVERLAY */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-3xl font-bold text-white">14</span>
+              <span className="text-xs text-slate-500 uppercase tracking-widest">Total Risks</span>
+            </div>
+          </div>
+        </div>
+        {/* --- 5. Scanning History (Table) --- */}
+        <div className="md:col-span-12 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <History className="w-5 h-5 text-slate-400" />
+              Scan History
+            </h3>
+            <button className="text-sm text-indigo-400 hover:text-indigo-300">View All</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-400">
+              <thead className="bg-slate-950 text-slate-200 uppercase font-medium">
+                <tr>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Date & Time</th>
+                  <th className="px-6 py-4">Vulnerabilities</th>
+                  <th className="px-6 py-4">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {history.map((scan) => (
+                  <tr key={scan.id} className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                        scan.status === 'Passed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        scan.status === 'Failed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {scan.status === 'Passed' && <CheckCircle className="w-3 h-3" />}
+                        {scan.status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
+                        {scan.status === 'Warnings' && <AlertTriangle className="w-3 h-3" />}
+                        {scan.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-white">
+                      {scan.date} <span className="text-slate-600 text-xs ml-1">{scan.time}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {scan.vulns > 0 ? (
+                        <span className="text-red-400 font-bold">{scan.vulns} Detected</span>
+                      ) : (
+                        <span className="text-slate-500">None</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <button className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
+                        <Search className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
