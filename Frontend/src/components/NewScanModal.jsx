@@ -10,7 +10,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 import api from "../utils/api";
 
-const NewScanModal = ({ isOpen, onClose }) => {
+const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
   const [step, setStep] = useState(1);
 
   // STEP-1 data
@@ -68,17 +68,18 @@ const NewScanModal = ({ isOpen, onClose }) => {
     }
 
     try {
-      await api.post("/api/scan", formData, {
+      const response = await api.post("/api/scan", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
-      handleClose();
+      const scanId = response.data.scanId;
+      onScanSuccess(scanId);
     } catch (error) {
       console.error(
         "Scan failed:",
         error.response?.data || error.message
       );
-      setIsSubmitting(false); // allow retry
+      setIsSubmitting(false); 
     }
   };
 
@@ -208,7 +209,6 @@ const NewScanModal = ({ isOpen, onClose }) => {
                 <input
                   type="file"
                   className="file-input"
-                  accept=".zip"
                   webkitdirectory="true"
                   directory="true"
                   multiple
@@ -216,13 +216,16 @@ const NewScanModal = ({ isOpen, onClose }) => {
                     const files = e.target.files;
                     if (!files || files.length === 0) return;
 
+                    // ZIP file
                     if (files.length === 1 && files[0].name.endsWith(".zip")) {
                       setZipFile(files[0]);
                       setSourceType("zip");
-                    } else {
-                      setZipFile(files);
-                      setSourceType("folder");
+                      return;
                     }
+
+                    // Folder upload
+                    setZipFile(files);
+                    setSourceType("folder");
                   }}
                 />
               </div>

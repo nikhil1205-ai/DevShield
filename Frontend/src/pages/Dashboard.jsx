@@ -23,6 +23,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import "../styles/Dashboard.css"
 import NewScanModal from '../components/NewScanModal';
+import { useNavigate } from "react-router-dom";
 
 // --- Mock Data ---
 const initialHistory = [
@@ -54,6 +55,7 @@ const Dashboard = () => {
   const [history, setHistory] = useState(initialHistory);
   const [logs, setLogs] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   // --- 4. Function to Take New Scan ---
   const handleStartScan = () => {
@@ -111,7 +113,8 @@ const Dashboard = () => {
         </button>
         <NewScanModal 
           isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
+          onClose={() => setIsModalOpen(false)}
+          onScanSuccess={(scanId) => navigate(`/scan/${scanId}`)} 
         />
       </header>
 

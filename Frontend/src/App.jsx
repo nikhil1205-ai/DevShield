@@ -9,6 +9,7 @@ import Landing from "./Landing.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Layout from "./components/Layout.jsx";
 import TestPage from "./pages/TestPage";
+import ScanPage from "./pages/ScanPage";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dash" element={<Dashboard />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/scan/:scanId" element={<ScanPage />} /> 
         </Route>
       </Routes>
     </Router>
