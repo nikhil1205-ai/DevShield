@@ -134,3 +134,20 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.drop-zone {
+  position: relative;
+  border: 2px dashed #334155;
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  background: #020617;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
