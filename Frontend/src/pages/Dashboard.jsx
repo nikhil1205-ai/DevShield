@@ -22,6 +22,7 @@ import {
 } from 'recharts';
 import AddIcon from '@mui/icons-material/Add';
 import "../styles/Dashboard.css"
+import NewScanModal from '../components/NewScanModal';
 
 // --- Mock Data ---
 const initialHistory = [
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [history, setHistory] = useState(initialHistory);
   const [logs, setLogs] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // --- 4. Function to Take New Scan ---
   const handleStartScan = () => {
@@ -103,10 +105,14 @@ const Dashboard = () => {
         </div>
         
         {/* --- 4. Action Button: Take New Scan --- */}
-        <button className="btn-new-scan-plus">
+        <button className="btn-new-scan-plus" onClick={() => setIsModalOpen(true)}>
           <AddIcon className="plus-icon" />
           <span>New Scan</span>
         </button>
+        <NewScanModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       </header>
 
       {/* Grid Layout */}
