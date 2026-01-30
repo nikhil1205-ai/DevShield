@@ -5,12 +5,9 @@ import path from "path";
 import { exec } from "child_process";
 import unzipper from "unzipper";
 import cors from "cors";
+import StaticScan from "../Routes/StaticScan.js"
 
 const app = express();
-
-/* ===============================
-   CORS CONFIG
-================================ */
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -18,23 +15,15 @@ app.use(
   })
 );
 
-/* ===============================
-   MULTER CONFIG (MEMORY)
-================================ */
 const upload = multer({
   storage: multer.memoryStorage()
 });
 
-/* ===============================
-   HELPERS
-================================ */
-
-// sanitize project name to avoid path traversal
 function safeProjectName(name) {
   return name.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
-// create workspace
+
 function createWorkspace(scanId, projectName) {
   const workspace = path.join(
     process.cwd(),
@@ -165,6 +154,9 @@ app.post("/api/scan", upload.any(), async (req, res) => {
     });
   }
 });
+
+
+app.use("/api/scan/:scanId/",StaticScan);
 
 /* ===============================
    SERVER
