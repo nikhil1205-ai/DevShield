@@ -17,27 +17,36 @@ const ScanPage = () => {
   const { scanId } = useParams();
 
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]); // 👈 array of files
-  const [copied, setCopied] = useState(false);
+  const [results, setResults] = useState([]); // [{ file, sections: [] }]
+  const [copiedKey, setCopiedKey] = useState(null);
 
-  const handleCopy = (text) => {
+  const handleCopy = (text, key) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
   };
 
   const handleRunAnalysis = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`api/scan/staticscan/${scanId}`);
-
-      // 🔁 Convert ans{} → array
+      const res = await api.get(`/api/scan/staticscan/${scanId}`);
+      console.log(res);
+      /**
+       * Convert backend ans{} into renderable structure
+       */
       const formatted = Object.entries(res.data.ans || {}).map(
-        ([filePath, values]) => ({
+        ([filePath, sections]) => ({
           file: filePath,
-          vulnerable: values[0],
-          secure: values[1],
-          why: values[2]
+          sections: sections.map(sec => ({
+          section: sec[0],
+          fix: sec[1],
+          why: sec[2],
+
+          // temporary metadata (until backend adds it)
+          type: "VULNERABILITY",
+          severity: "HIGH"
+        }))
+
         })
       );
 
@@ -49,14 +58,12 @@ const ScanPage = () => {
     }
   };
 
-  const result = results[0]; // show first file for now
-
   return (
     <div className="scan-page-root">
       <header className="scan-header">
         <div className="title-group">
           <h1>Security Analysis Engine</h1>
-          <p>Review and fix vulnerabilities across your project files.</p>
+          <p>Section-based vulnerability analysis (real SAST).</p>
         </div>
 
         <button
@@ -64,79 +71,88 @@ const ScanPage = () => {
           onClick={handleRunAnalysis}
           disabled={loading}
         >
-          {loading ? (
-            <CircularProgress size={20} color="inherit" />
-          ) : (
-            <PlayArrowIcon />
-          )}
-          <span>{loading ? "Analyzing..." : "Run Analysis"}</span>
+          {loading ? <CircularProgress size={20} /> : <PlayArrowIcon />}
+          <span>{loading ? "Analyzing…" : "Run Analysis"}</span>
         </button>
       </header>
 
       {!results.length && !loading && (
         <div className="empty-state">
           <ShieldIcon className="shield-placeholder" />
-          <p>Ready to scan. Click the button above to start the engine.</p>
+          <p>Ready to analyze project security sections.</p>
         </div>
       )}
 
-      {result && !loading && (
-        <div className="analysis-container animate-slide-up">
-          <div className="results-header">
-            <h3>
-              <ErrorOutlineIcon /> Vulnerability Detected
-            </h3>
-            <span className="severity-tag">High Risk</span>
+      {/* FILE LOOP */}
+      {results.map((fileResult, fileIdx) => (
+        <div key={fileIdx} className="analysis-container animate-slide-up">
+          <div className="analysis-col full-width">
+            <label>Source File</label>
+            <div className="source-info-box">
+              <SourceIcon className="src-icon" />
+              <span>{fileResult.file}</span>
+            </div>
           </div>
 
-          {/* ROW 1 */}
-          <div className="analysis-top-row">
-            <div className="analysis-col">
-              <label>Source File</label>
-              <div className="source-info-box">
-                <SourceIcon className="src-icon" />
-                <span>{result.file}</span>
-              </div>
-            </div>
+          {/* SECTION LOOP */}
+          {fileResult.sections.map((sec, secIdx) => {
+            const key = `${fileIdx}-${secIdx}`;
 
-            <div className="analysis-col">
-              <label>Actual Code</label>
-              <div className="code-block original">
-                <pre><code>{result.vulnerable}</code></pre>
-              </div>
-            </div>
-
-            <div className="analysis-col">
-              <label>Suggested Fix</label>
-              <div className="code-block suggestion relative-container">
-                <pre><code>{result.secure}</code></pre>
-                <button
-                  className={`copy-btn-mini ${copied ? "copied" : ""}`}
-                  onClick={() => handleCopy(result.secure)}
-                >
-                  {copied ? <DoneIcon /> : <ContentCopyIcon />}
-                </button>
-                <div className="fix-check">
-                  <CheckCircleOutlineIcon /> Secure Pattern
+            return (
+              <div key={key} className="issue-block">
+                <div className="results-header">
+                  <h3>
+                    <ErrorOutlineIcon /> {sec.type.replace("_", " ")}
+                  </h3>
+                  <span className={`severity-tag ${sec.severity.toLowerCase()}`}>
+                    {sec.severity}
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* ROW 2 */}
-          <div className="analysis-bottom-row">
-            <div className="explanation-section">
-              <label>Why this code?</label>
-              <div className="explanation-content">
-                <p>{result.why}</p>
-                <div className="cwe-meta">
-                  Industry Reference: <strong>CWE-798</strong>
+                {/* SECTION CODE */}
+                <div className="analysis-top-row">
+                  <div className="analysis-col">
+                    <label>Vulnerable Section</label>
+                    <div className="code-block original">
+                      <pre><code>{sec.section}</code></pre>
+                    </div>
+                  </div>
+
+                  <div className="analysis-col">
+                    <label>Secure Fix</label>
+                    <div className="code-block suggestion relative-container">
+                      <pre><code>{sec.fix}</code></pre>
+                      <button
+                        className={`copy-btn-mini ${
+                          copiedKey === key ? "copied" : ""
+                        }`}
+                        onClick={() => handleCopy(sec.fix, key)}
+                      >
+                        {copiedKey === key ? <DoneIcon /> : <ContentCopyIcon />}
+                      </button>
+                      <div className="fix-check">
+                        <CheckCircleOutlineIcon /> Secure Pattern
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* WHY */}
+                <div className="analysis-bottom-row">
+                  <div className="explanation-section">
+                    <label>Why this section is risky?</label>
+                    <div className="explanation-content">
+                      <p>{sec.why}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="issue-divider" />
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      )}
+      ))}
     </div>
   );
 };

@@ -156,7 +156,7 @@ app.post("/api/scan", upload.any(), async (req, res) => {
 });
 
 
-app.use("/api/scan/staticscan/",StaticScan);
+app.use("/api/scan/staticscan",StaticScan);
 
 /* ===============================
    SERVER

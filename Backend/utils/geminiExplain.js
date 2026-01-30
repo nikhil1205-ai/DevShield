@@ -1,60 +1,71 @@
 import { callGemini } from "./geminiClient.js";
 
 /**
- * @param {string} code      → source code (already size-limited)
- * @param {string} filePath → file path for context
+ * Gemini-powered section-based SAST
+ * @param {string} code      Full file code (limited before calling)
+ * @param {string} filePath File path
+ * @returns {Array<{section: string, fix: string, why: string}>}
  */
 export async function explainWithGemini(code, filePath) {
   const prompt = `
-You are a secure code reviewer.
+You are a professional static application security testing (SAST) engine.
 
-File Path:
+File path:
 ${filePath}
 
-Source Code:
+Source code:
 ${code}
 
-Respond in the EXACT format below (do not add extra text):
+TASK:
+1. Identify ALL security vulnerabilities in the code.
+2. Each vulnerability MUST be a LOGICAL CODE SECTION (multi-line).
+3. For EACH vulnerability, provide:
+   - The vulnerable code section
+   - A secure rewritten version of THAT SECTION
+   - A short explanation of why the original section is dangerous
 
-❌ Vulnerable Code:
-<code>
+RULES:
+- Do NOT explain safe code.
+- Do NOT repeat the same vulnerability twice.
+- Limit to maximum 5 vulnerabilities.
+- Focus on real issues: SQL Injection, RCE, hardcoded secrets, auth flaws, insecure CORS, weak crypto.
 
-✅ Secure Code:
-<code>
+RESPOND in STRICT JSON ONLY.
+NO markdown.
+NO extra text.
 
-Why this code?
-<simple explanation for beginners>
+JSON FORMAT:
+[
+  {
+    "section": "<vulnerable code section>",
+    "fix": "<secure rewritten section>",
+    "why": "<why this section is risky>"
+  }
+]
 `;
 
   const response = await callGemini(prompt);
 
-  // 🛡️ HARD SAFETY FALLBACK
+  // 🛡️ HARD SAFETY
   if (!response || typeof response !== "string") {
-    return {
-      vulnerable: code.slice(0, 300),
-      secure: "Use environment variables, validation, and secure APIs.",
-      why: "This pattern can introduce security risks if sensitive data is exposed."
-    };
+    return [];
   }
 
-  // 🧠 SAFE PARSING
-  const vulnerable =
-    response.split("❌ Vulnerable Code:")[1]?.split("✅ Secure Code:")[0]?.trim()
-    || code.slice(0, 300);
+  try {
+    // 🔥 Gemini MUST return JSON
+    const parsed = JSON.parse(response);
 
-  const secure =
-    response.split("✅ Secure Code:")[1]?.split("Why this code?")[0]?.trim()
-    || "Follow secure coding best practices.";
+    // 🧠 Validate structure
+    if (!Array.isArray(parsed)) return [];
 
-  const why =
-    response.split("Why this code?")[1]?.trim()
-    || "This code pattern can expose the application to security vulnerabilities.";
-
-  return {
-    vulnerable,
-    secure,
-    why
-  };
+    return parsed.filter(
+      item =>
+        typeof item.section === "string" &&
+        typeof item.fix === "string" &&
+        typeof item.why === "string"
+    );
+  } catch (err) {
+    console.error("Gemini JSON parse failed:", err.message);
+    return [];
+  }
 }
-
-
