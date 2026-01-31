@@ -1,7 +1,7 @@
 /* SIDEBAR ROOT STRUCTURE */
 .sidebar-root {
   width: 260px;
-  height: calc(100vh - 72px); /* Adjusted for Navbar height */
+  height: calc(100vh - 72px);
   background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
@@ -15,7 +15,7 @@
   width: 80px;
 }
 
-/* SIDEBAR HEADER (Internal Branding) */
+/* SIDEBAR HEADER */
 .sidebar-header {
   padding: 2rem 1.5rem;
   display: flex;
@@ -33,10 +33,18 @@
   justify-content: center;
 }
 
-.brand-logo-icon { font-size: 1.5rem !important; }
-.brand-name { font-weight: 800; font-size: 1.1rem; color: #f8fafc; letter-spacing: 0.5px; }
+.brand-logo-icon {
+  font-size: 1.5rem !important;
+}
 
-/* NAV NAVIGATION */
+.brand-name {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #f8fafc;
+  letter-spacing: 0.5px;
+}
+
+/* NAVIGATION */
 .sidebar-nav {
   flex: 1;
   padding: 0 0.75rem;
@@ -55,18 +63,25 @@
   height: 38px;
 }
 
-/* INDIVIDUAL NAV ITEMS */
+/* NAV ITEM (NavLink FIX) */
 .nav-item-link {
   display: flex;
   align-items: center;
+  width: 100%;
   padding: 0.85rem 1rem;
   color: #94a3b8;
   border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   position: relative;
+  transition: all 0.2s ease;
+  text-decoration: none;     /* removes link underline */
+  cursor: pointer;
 }
 
+.nav-item-link:visited {
+  color: #94a3b8;
+}
+
+/* ICON */
 .icon-box {
   min-width: 24px;
   display: flex;
@@ -78,6 +93,7 @@
   font-size: 1.4rem;
 }
 
+/* TEXT */
 .item-text {
   margin-left: 14px;
   font-weight: 500;
@@ -85,12 +101,17 @@
   white-space: nowrap;
 }
 
-/* ACTIVE STATE - Glass Glow Effect */
+/* ACTIVE STATE */
 .nav-item-link.active {
   background: rgba(59, 130, 246, 0.12);
   color: #60a5fa;
 }
 
+.nav-item-link.active .icon-box svg {
+  color: #60a5fa;
+}
+
+/* LEFT ACTIVE BAR */
 .active-indicator {
   position: absolute;
   left: 0;
@@ -101,12 +122,17 @@
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
 }
 
+/* HOVER STATE */
 .nav-item-link:hover:not(.active) {
   background: rgba(255, 255, 255, 0.04);
   color: #f1f5f9;
 }
 
-/* SIDEBAR FOOTER & TOGGLE */
+.nav-item-link:hover:not(.active) .icon-box svg {
+  color: #f1f5f9;
+}
+
+/* SIDEBAR FOOTER */
 .sidebar-footer {
   padding: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -134,7 +160,19 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* RESPONSIVE LOGIC */
-.collapsed .item-text, .collapsed .nav-label {
+/* COLLAPSED STATE */
+.collapsed .item-text,
+.collapsed .nav-label {
   display: none;
+}
+
+
+/* ACTION ITEM ACTIVE STATE (New Scan Modal Open) */
+.nav-item-link.action-active {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+}
+
+.nav-item-link.action-active .icon-box svg {
+  color: #60a5fa;
 }
