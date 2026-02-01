@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../styles/Sidebar.css';
+import '../styles/DashSidebar.css';
 
 // Material UI Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -14,7 +14,7 @@ import ShieldIcon from '@mui/icons-material/Shield';
 
 import NewScanModal from './NewScanModal';
 
-const Sidebar = () => {
+const DashSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -114,4 +114,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default DashSidebar;

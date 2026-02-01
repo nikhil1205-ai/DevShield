@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../styles/ScanPage.css";
+import "../styles/SASTPage.css";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ShieldIcon from "@mui/icons-material/Shield";
@@ -12,10 +12,10 @@ import DoneIcon from "@mui/icons-material/Done";
 
 import { useParams } from "react-router-dom";
 import api from "../utils/api";
+import { useScanContext } from "../context/ScanContext";
 
-const ScanPage = () => {
-  const { scanId } = useParams();
-
+const SASTPage = () => {
+  const { scanId} = useScanContext();
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]); // [{ file, sections: [] }]
   const [copiedKey, setCopiedKey] = useState(null);
@@ -157,4 +157,4 @@ const ScanPage = () => {
   );
 };
 
-export default ScanPage;
+export default SASTPage;

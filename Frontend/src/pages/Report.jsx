@@ -1,6 +1,6 @@
 import React from "react";
 
-const TestPage = () => {
+const Report = () => {
   return (
     <div className="container" style={{ paddingTop: "6rem" }}>
       <h1>Global Styles Test</h1>
@@ -25,4 +25,4 @@ const TestPage = () => {
   );
 };
 
-export default TestPage;
+export default Report;

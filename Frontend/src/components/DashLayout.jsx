@@ -1,14 +1,14 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
-import Sidebar from "./Sidebar.jsx";
-import "../styles/Layout.css";
+import DashSidebar from "./DashSidebar.jsx";
+import "../styles/DashLayout.css";
 
-function Layout(){
+function DashLayout(){
   return (
     <div className="app-shell">
       <Navbar />
       <div className="app-body">
-        <Sidebar />
+        <DashSidebar />
         <main className="app-content">
           <Outlet />
         </main>
@@ -17,4 +17,4 @@ function Layout(){
   );
 }
 
-export default Layout;
+export default DashLayout;

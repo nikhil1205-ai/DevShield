@@ -114,7 +114,7 @@ const Dashboard = () => {
         <NewScanModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
-          onScanSuccess={(scanId) => navigate(`/scan/${scanId}`)} 
+          onScanSuccess={(scanId) => navigate(`/scan/${scanId}/sast`)} 
         />
       </header>
 

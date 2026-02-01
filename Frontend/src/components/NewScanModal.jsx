@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import "../styles/NewScanModal.css";
-
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ComputerIcon from "@mui/icons-material/Computer";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import FolderZipIcon from "@mui/icons-material/FolderZip";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-
 import api from "../utils/api";
+import { useScanContext } from "../context/ScanContext";
 
 const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
   const [step, setStep] = useState(1);
@@ -23,6 +22,7 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
 
   // UX lock
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { scanId,setScanId} = useScanContext();
 
   if (!isOpen) return null;
 
@@ -73,6 +73,7 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
       });
 
       const scanId = response.data.scanId;
+      setScanId(scanId);
       onScanSuccess(scanId);
     } catch (error) {
       console.error(
