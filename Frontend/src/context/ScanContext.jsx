@@ -5,12 +5,14 @@ const ScanContext = createContext(null);
 export const ScanProvider = ({ children }) => {
   const [scanId, setScanId] = useState(null);
   const [projectId, setProjectId] = useState(null);
-
+  const [SATSresults, SATSsetResults] = useState([]);
   return (
     <ScanContext.Provider
       value={{
         scanId,
-        setScanId
+        setScanId,
+        SATSresults,
+        SATSsetResults
       }}
     >
       {children}

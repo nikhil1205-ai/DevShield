@@ -2,7 +2,7 @@ import { Outlet, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import Navbar from "./Navbar.jsx";
 import ScanSidebarPage from "./ScanSidebarPage.jsx";
-import "../styles/Layout.css";
+import "../styles/DashLayout.css";
 
 function ScanLayoutPage() {
   return (

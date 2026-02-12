@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HackForGreen – Logger SDK Demo</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button { margin: 6px; padding: 10px 16px; cursor: pointer; }
+    h2 { margin-top: 25px; }
+  </style>
+</head>
+
+<body>
+  <h1>HackForGreen – Logger SDK Demo</h1>
+
+  <h2>User Errors</h2>
+  <button onclick="loginFailed()">Login Failed</button>
+
+  <h2>Database Errors (Simulated)</h2>
+  <button onclick="dbConnectionError()">DB Connection Error</button>
+  <button onclick="dbQueryError()">DB Query Error</button>
+
+  <h2>API Errors</h2>
+  <button onclick="apiError()">API 500 Error</button>
+  <button onclick="apiTimeout()">API Timeout</button>
+
+  <h2>Runtime</h2>
+  <button onclick="runtimeError()">Runtime Error (Safe)</button>
+
+  <!-- ✅ LOCAL SDK -->
+  <script src="logger-sdk.js"></script>
+
+  <script>
+    Logger.init({
+      endpoint: "https://hackforgreen.onrender.com/logs",
+      appName: "hackforgreen-test-app"
+    });
+
+    function loginFailed() {
+      Logger.error("Login failed", { username: "test_user" });
+    }
+
+    function dbConnectionError() {
+      Logger.error("Database connection failed", {
+        db: "PostgreSQL",
+        error: "ECONNREFUSED"
+      });
+    }
+
+    function dbQueryError() {
+      Logger.error("Database query failed", {
+        query: "SELECT * FROM users WHERE",
+        error: "Syntax error"
+      });
+    }
+
+    function apiError() {
+      fetch("https://jsonplaceholder.typicode.com/invalid-endpoint")
+        .catch(err => {
+          Logger.error("API error", { error: err.message });
+        });
+    }
+
+    function apiTimeout() {
+      setTimeout(() => {
+        Logger.error("API timeout", {
+          endpoint: "/slow-api",
+          timeoutMs: 5000
+        });
+      }, 500);
+    }
+
+    function runtimeError() {
+      try {
+        throw new Error("Manual runtime error");
+      } catch (err) {
+        Logger.error("Runtime error caught", {
+          message: err.message,
+          stack: err.stack
+        });
+      }
+    }
+  </script>
+</body>
+</html>

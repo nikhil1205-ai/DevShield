@@ -16,7 +16,7 @@ const ScanSidebarPage = () => {
   const menuItems = [
     {
       id: 'sast',
-      path: `/scan/${scanId}`,
+      path: `/scan/${scanId}/sast`,
       label: 'Static Analysis',
       sub: 'Source Code (SAST)',
       icon: <TerminalIcon />,
@@ -24,7 +24,7 @@ const ScanSidebarPage = () => {
     },
     {
       id: 'dast',
-      path: `/scan/${scanId}?tab=dast`,
+      path: `/scan/${scanId}/dast`,
       label: 'Dynamic Testing',
       sub: 'Runtime Scan (DAST)',
       icon: <BugReportIcon />,
@@ -32,7 +32,7 @@ const ScanSidebarPage = () => {
     },
     {
       id: 'reports',
-      path: `/scan/${scanId}?tab=reports`,
+      path: `/scan/${scanId}/reports`,
       label: 'Detailed Reports',
       sub: 'Security Analytics',
       icon: <AutoGraphIcon />,

@@ -107,7 +107,7 @@ const DashSidebar = () => {
         onClose={() => setIsModalOpen(false)}
         onScanSuccess={(scanId) => {
           setIsModalOpen(false);
-          navigate(`/scan/${scanId}`);
+          navigate(`/scan/${scanId}/sast`);
         }}
       />
     </>

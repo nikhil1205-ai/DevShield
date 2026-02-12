@@ -74,6 +74,7 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
 
       const scanId = response.data.scanId;
       setScanId(scanId);
+      console.log("ScanId:-", scanId)
       onScanSuccess(scanId);
     } catch (error) {
       console.error(

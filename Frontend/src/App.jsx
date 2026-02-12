@@ -34,11 +34,11 @@ function App() {
             <ScanProvider>
               <ScanLayoutPage />
             </ScanProvider>
-          }
+          }                  
         >
             <Route path="/scan/:scanId/sast" element={<SASTPage/>} />
             <Route path="/scan/:scanId/dast" element={<DASTPage/>} />
-            {/* <Route path="/scan/:scanId/sast" element={<ScanPage/>} /> */}
+            <Route path="/scan/:scanId/reports" element={<Report/>} />
         </Route>
 
       </Routes>

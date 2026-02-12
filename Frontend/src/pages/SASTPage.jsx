@@ -15,9 +15,8 @@ import api from "../utils/api";
 import { useScanContext } from "../context/ScanContext";
 
 const SASTPage = () => {
-  const { scanId} = useScanContext();
+  const { scanId,SATSresults,SATSsetResults} = useScanContext();
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]); // [{ file, sections: [] }]
   const [copiedKey, setCopiedKey] = useState(null);
 
   const handleCopy = (text, key) => {
@@ -50,7 +49,7 @@ const SASTPage = () => {
         })
       );
 
-      setResults(formatted);
+      SATSsetResults(formatted);
     } catch (err) {
       console.error("Failed to fetch scan results", err);
     } finally {
@@ -76,7 +75,7 @@ const SASTPage = () => {
         </button>
       </header>
 
-      {!results.length && !loading && (
+      {!SATSresults.length && !loading && (
         <div className="empty-state">
           <ShieldIcon className="shield-placeholder" />
           <p>Ready to analyze project security sections.</p>
@@ -84,7 +83,7 @@ const SASTPage = () => {
       )}
 
       {/* FILE LOOP */}
-      {results.map((fileResult, fileIdx) => (
+      {SATSresults.map((fileResult, fileIdx) => (
         <div key={fileIdx} className="analysis-container animate-slide-up">
           <div className="analysis-col full-width">
             <label>Source File</label>
