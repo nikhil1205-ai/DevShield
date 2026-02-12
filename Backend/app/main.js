@@ -66,7 +66,8 @@ app.post("/api/scan", upload.any(), async (req, res) => {
     });
   }
 
-  const safeName = safeProjectName(projectName);
+  // const safeName = safeProjectName(projectName);
+  let safeName="projects";
 
   console.log("📦 New Scan:", {
     scanId,
