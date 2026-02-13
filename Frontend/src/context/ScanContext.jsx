@@ -6,13 +6,16 @@ export const ScanProvider = ({ children }) => {
   const [scanId, setScanId] = useState(null);
   const [projectId, setProjectId] = useState(null);
   const [SATSresults, SATSsetResults] = useState([]);
+  const [DASTresults, DASTsetResults] = useState([]);
   return (
     <ScanContext.Provider
       value={{
         scanId,
         setScanId,
         SATSresults,
-        SATSsetResults
+        SATSsetResults,
+        DASTresults,
+        DASTsetResults
       }}
     >
       {children}

@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import DashLayout from "./components/DashLayout.jsx";
 import Report from "./pages/Report.jsx";
 import SASTPage from "./pages/SASTPage.jsx";
-import DASTPage from "./pages/SASTPage.jsx";
+import DASTPage from "./pages/DASTPage.jsx";
 import ScanLayoutPage from "./components/ScanLayoutPage.jsx";
 import { ScanProvider } from "./context/ScanContext";
 

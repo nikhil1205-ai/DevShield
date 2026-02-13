@@ -6,6 +6,7 @@ import { exec } from "child_process";
 import unzipper from "unzipper";
 import cors from "cors";
 import StaticScan from "../Routes/StaticScan.js"
+import DynamicScan from "../Routes/DynamicScan.js"
 
 const app = express();
 app.use(
@@ -14,7 +15,7 @@ app.use(
     credentials: true
   })
 );
-
+app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage()
 });
@@ -158,6 +159,7 @@ app.post("/api/scan", upload.any(), async (req, res) => {
 
 
 app.use("/api/scan/staticscan",StaticScan);
+app.use("/api/scan/dynamicscan",DynamicScan);
 
 /* ===============================
    SERVER
