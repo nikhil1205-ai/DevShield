@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from scanner.scanner import run_scan
+from URLscanner.scanner import run_scan
 
 app = FastAPI()
 

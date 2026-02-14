@@ -109,69 +109,27 @@ const ScanTypePage = () => {
     <h2 className="text-2xl font-bold mb-6 text-white border-b border-slate-800 pb-4">
       Analysis Report
     </h2>
+      
 
-    {DASTresults.map((result, index) => (
-      <div key={index} className="space-y-6">
-        
-        {/* ROW 1: SCAN SUMMARY */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
-            <p className="text-xs text-slate-500 uppercase font-bold">Scan Mode</p>
-            <p className="text-white font-medium">{result.scanType}</p>
-          </div>
-          <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
-            <p className="text-xs text-slate-500 uppercase font-bold">Risk Level</p>
-            <p className="text-amber-500 font-bold">Medium Risk</p>
-          </div>
-          <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
-            <p className="text-xs text-slate-500 uppercase font-bold">Vulnerabilities</p>
-            <p className="text-red-500 font-bold">{(result?.data?.headerIssues?.length || 0)+(result?.data?.leaks?.length || 0)} Found</p>
-          </div>
-        </div>
+    {DASTresults && DASTresults.length > 0 && (
+      <div className="mt-12 bg-slate-900/50 p-8 rounded-2xl border border-slate-800">
+        <h2 className="text-2xl font-bold mb-6 text-white">
+          Scan Results
+        </h2>
 
-        {/* ROW 2: DETAILED FINDINGS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* LEFT: HEADER ISSUES */}
-          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-            <h3 className="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_red]" />
-              Missing Security Headers
-            </h3>
-            <ul className="space-y-3">
-              {result?.data?.headerIssues?.map((issue, i) => (
-                <li key={i} className="text-sm text-slate-400 bg-black/30 p-3 rounded-lg border border-slate-800">
-                  {issue}
-                </li>
-              ))}
-            </ul>
+        {DASTresults.map((result, index) => (
+          <div
+            key={index}
+            className="mb-6 p-6 bg-black/40 border border-slate-700 rounded-xl"
+          >
+            <pre className="text-xs text-slate-300 overflow-x-auto">
+              {JSON.stringify(result, null, 2)}
+            </pre>
           </div>
-
-          {/* RIGHT: DATA LEAKS */}
-          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-            <h3 className="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_8px_orange]" />
-              Sensitive Data Exposure
-            </h3>
-            <div className="space-y-4">
-              {result?.data?.leaks?.map((leak, i) => (
-                <div key={i} className="bg-black/40 border border-slate-700 p-4 rounded-xl">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-xs font-bold text-amber-500 uppercase">{leak.type}</span>
-                    <span className="text-[10px] text-slate-600 font-mono">CONFIDENTIAL</span>
-                  </div>
-                  <code className="text-xs text-amber-200/60 break-all font-mono">
-                    {leak.data[0]}
-                  </code>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-
+        ))}
       </div>
-    ))}
+    )}
+    
   <br></br>
   </div>
 )}
