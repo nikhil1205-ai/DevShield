@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Language, 
@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import api from "../utils/api";
 import { useScanContext } from "../context/ScanContext";
+import yaml from "js-yaml";
 
 const ScanTypePage = () => {
   const [selectedType, setSelectedType] = useState('website');
@@ -31,23 +32,53 @@ const ScanTypePage = () => {
 
 
   const handleWebsiteScan = async (url) => {
-    if (!url) return;
+          if (!url) return;
+          setIsLoading(true);
+          try {
+            const response = await api.post("/api/scan/dynamicscan/", { url }); 
+            DASTsetResults(prev => [...prev,{scanType: "Website URL Scan",data: response.data}]);
+          } catch (err) {
+              DASTsetResults(prev => [
+                ...prev,
+                { type: "Website Scan", error: `${err}`}
+              ]);
+          }
+          setIsLoading(false);
+    };
 
-    setIsLoading(true);
+  const handleApiSchemaScan = async ({ file, schemaText }) => {
+      try {
+        let schema = null;
+        // If file uploaded
+        if (file) {
+          const text = await file.text();
+          if (file.name.endsWith(".yaml") || file.name.endsWith(".yml")) {
+            schema = yaml.load(text);   
+          } else {
+            schema = JSON.parse(text);  
+          }
+        }
+        // If text pasted
+        if (schemaText && !schema) {
+          try {
+            schema = JSON.parse(schemaText);
+          } catch {
+            schema = yaml.load(schemaText);
+          }
+        }
+        const response = await api.post(
+          "/api/scan/dynamicscan/apiSchema",
+          { schema }
+        );
+        console.log(response.data);
 
-    try {
-      const response = await api.post("/api/scan/dynamicscan/", { url }); 
-      DASTsetResults(prev => [...prev,{scanType: "Website URL Scan",data: response.data}]);
+      } catch (error) {
+        console.error(
+          "API Schema Scan failed:",
+          error.response?.data || error.message
+        );
+      }
 
-    } catch (err) {
-        DASTsetResults(prev => [
-          ...prev,
-          { type: "Website Scan", error: `${err}`}
-        ]);
-    }
-
-
-    setIsLoading(false);
   };
 
   return (
@@ -95,8 +126,8 @@ const ScanTypePage = () => {
                 className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-8 shadow-2xl"
               >
                 {selectedType  === 'website' && <WebsiteScanUI onStart={handleWebsiteScan} isLoading={isLoading} />}
-                {selectedType  === 'proxy' && <ProxyScanUI onStart={() => {}} isLoading={isLoading} />}
-                {selectedType  === 'api' && <ApiScanUI onStart={() => {}} isLoading={isLoading} />}
+                {selectedType  === 'proxy' && <ProxyScanUI onStart={()=>{}} isLoading={isLoading} />}
+                {selectedType  === 'api' && <ApiScanUI onStart={handleApiSchemaScan} isLoading={isLoading} />}
                 {selectedType  === 'logs' && <LogScanUI onStart={() => {}} isLoading={isLoading} />}
               </motion.div>
             )}
@@ -182,36 +213,115 @@ const ProxyScanUI = ({ onStart, isLoading }) => (
   <div className="grid md:grid-cols-2 gap-10">
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-        <SettingsInputComponent className="text-indigo-500" /> Proxy Runtime Monitoring
+        <SettingsInputComponent className="text-indigo-500" />
+        Proxy Runtime Monitoring
       </h2>
-      <p className="text-sm text-slate-400">Configure your application or browser to route traffic through DevShield Proxy.</p>
+
+      <p className="text-sm text-slate-400">
+        Configure your browser to use DevShield Proxy.
+      </p>
+
       <div className="grid grid-cols-2 gap-4">
-        <input readOnly value="Host: 127.0.0.1" className="bg-black/40 border border-slate-700 p-3 rounded-lg text-indigo-400 font-mono text-sm" />
-        <input readOnly value="Port: 8080" className="bg-black/40 border border-slate-700 p-3 rounded-lg text-indigo-400 font-mono text-sm" />
+        <input
+          readOnly
+          value="Host: 127.0.0.1"
+          className="bg-black/40 border border-slate-700 p-3 rounded-lg text-indigo-400 font-mono text-sm"
+        />
+        <input
+          readOnly
+          value="Port: 8080"
+          className="bg-black/40 border border-slate-700 p-3 rounded-lg text-indigo-400 font-mono text-sm"
+        />
       </div>
-      <button className="w-full bg-indigo-600 py-3 rounded-xl font-bold">Start Monitoring</button>
+
+      <button
+        onClick={onStart}
+        disabled={isLoading}
+        className="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold transition disabled:opacity-50"
+      >
+        {isLoading ? "Starting..." : "Start Monitoring"}
+      </button>
     </div>
+
     <div className="bg-white/5 p-4 rounded-xl text-xs grid grid-cols-2 gap-2 text-slate-400">
-        <div>• Request headers</div><div>• Response headers</div><div>• Cookies</div><div>• API calls</div>
+      <div>• Request headers</div>
+      <div>• Response headers</div>
+      <div>• Cookies</div>
+      <div>• JWT tokens</div>
+      <div>• API calls</div>
+      <div>• Data leak detection</div>
     </div>
   </div>
 );
 
-const ApiScanUI = ({ onStart, isLoading }) => (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-      <Api className="text-indigo-500" /> API Schema Scan
-    </h2>
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="border-2 border-dashed border-slate-700 p-8 rounded-2xl text-center">
-        <CloudUpload className="text-slate-600 mb-2" />
-        <p className="text-sm">Upload .json or .yaml</p>
+const ApiScanUI = ({ onStart, isLoading }) => {
+
+  const [file, setFile] = useState(null);
+  const [schemaText, setSchemaText] = useState("");
+
+  const handleSubmit = () => {
+
+    if (!file && !schemaText) {
+      alert("Upload a schema file or paste OpenAPI schema");
+      return;
+    }
+
+    onStart({
+      file,
+      schemaText
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+
+      <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+        <Api className="text-indigo-500" /> API Schema Scan
+      </h2>
+
+      <div className="grid md:grid-cols-2 gap-6">
+
+        {/* File Upload */}
+        <div className="border-2 border-dashed border-slate-700 p-8 rounded-2xl text-center">
+
+          <CloudUpload className="text-slate-600 mb-2 mx-auto" />
+
+          <p className="text-sm text-slate-400">
+            Upload OpenAPI Schema (.json / .yaml)
+          </p>
+
+          <input
+            type="file"
+            accept=".json,.yaml,.yml"
+            className="mt-3 text-sm"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+
+        </div>
+
+        {/* Paste Schema */}
+        <textarea
+          placeholder="Or paste OpenAPI schema here..."
+          className="w-full bg-black/40 border border-slate-700 p-4 rounded-xl text-sm h-32"
+          value={schemaText}
+          onChange={(e) => setSchemaText(e.target.value)}
+        />
+
       </div>
-      <textarea placeholder="Or paste OpenAPI schema here..." className="w-full bg-black/40 border border-slate-700 p-4 rounded-xl text-sm h-32" />
+
+      {/* Start Scan Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={isLoading}
+        className="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-xl font-bold disabled:opacity-50"
+      >
+        {isLoading ? "Scanning..." : "Validate API"}
+      </button>
+
     </div>
-    <button className="w-full bg-indigo-600 py-4 rounded-xl font-bold">Validate API</button>
-  </div>
-);
+  );
+};
+
 
 const LogScanUI = ({ onStart, isLoading }) => (
   <div className="space-y-6">

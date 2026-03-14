@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 
-import { explainWithGemini } from "../utils/geminiExplain.js";
+import { explainWithGemini } from "../utils/gemini_Static_code.js";
 import { walkFiles } from "../utils/fileWalker.js";
 import { readFileSafe } from "../utils/readFileSafe.js";
 
