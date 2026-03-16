@@ -33,15 +33,18 @@ router.post("/apiSchema", async (req, res) => {
       });
     }
 
-    console.log("SCHEMA RECEIVED:", Object.keys(schema));
-
     const response = await axios.post(
       "http://localhost:9000/PYdast/apiSchema",
       { schema }
     );
     
-    let result =Gemini_APISchema(schema,response.data);
-    res.json(result);
+    const ruleFindings = response.data;
+    const llmResult = await Gemini_APISchema(schema, ruleFindings);
+    const finalResult = {
+      rule_engine: ruleFindings,
+      llm_analysis: JSON.parse(llmResult) 
+    };
+    res.json(finalResult);
 
   } catch (error) {
 

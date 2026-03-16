@@ -1,5 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import "../styles/DASTstyle.css"
 import { 
   Language, 
   SettingsInputComponent, 
@@ -21,8 +22,8 @@ const ScanTypePage = () => {
 
   const scanOptions = [
     { id: 'website', title: 'Website URL Scan', desc: 'Scan live web applications for vulnerabilities.', icon: <Language /> },
-    { id: 'proxy', title: 'Proxy Monitoring', desc: 'Real-time runtime traffic analysis.', icon: <SettingsInputComponent /> },
     { id: 'api', title: 'API Schema Scan', desc: 'Analyze API definitions.', icon: <Api /> },
+    { id: 'proxy', title: 'Proxy Monitoring', desc: 'Real-time runtime traffic analysis.', icon: <SettingsInputComponent /> },
     { id: 'logs', title: 'Log Analysis', desc: 'Sift through system and app logs.', icon: <Assignment /> },
   ];
 
@@ -70,7 +71,7 @@ const ScanTypePage = () => {
           "/api/scan/dynamicscan/apiSchema",
           { schema }
         );
-        console.log(response.data);
+        DASTsetResults(prev => [...prev,{scanType: "API Schema Scan",data: response.data}]);
 
       } catch (error) {
         console.error(
@@ -144,20 +145,28 @@ const ScanTypePage = () => {
 
     {DASTresults && DASTresults.length > 0 && (
       <div className="mt-12 bg-slate-900/50 p-8 rounded-2xl border border-slate-800">
+        
         <h2 className="text-2xl font-bold mb-6 text-white">
           Scan Results
         </h2>
 
-        {DASTresults.map((result, index) => (
-          <div
-            key={index}
-            className="mb-6 p-6 bg-black/40 border border-slate-700 rounded-xl"
-          >
-            <pre className="text-xs text-slate-300 overflow-x-auto">
-              {JSON.stringify(result, null, 2)}
-            </pre>
+        {DASTresults && DASTresults.length > 0 && (
+          <div className="mt-12 bg-slate-900/50 p-8 rounded-2xl border border-slate-800">
+            <h2 className="text-2xl font-bold mb-6 text-white">
+              Scan Results
+            </h2>
+
+            {DASTresults.map((result, index) => (
+              <div
+                key={index}
+                className="mb-6 p-6 bg-black/40 border border-slate-700 rounded-xl"
+              >
+                <JsonNode data={result} />
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+
       </div>
     )}
     
@@ -335,5 +344,42 @@ const LogScanUI = ({ onStart, isLoading }) => (
     <button className="w-full bg-indigo-600 py-4 rounded-xl font-bold">Start Log Analysis</button>
   </div>
 );
+
+
+const JsonNode = ({ data }) => {
+  if (Array.isArray(data)) {
+    return (
+      <div className="json-array">
+        {data.map((item, index) => (
+          <div key={index} className="json-array-item">
+            <JsonNode data={item} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (typeof data === "object" && data !== null) {
+    return (
+      <div className="json-object">
+        {Object.entries(data).map(([key, value]) => (
+          <div key={key} className="json-row">
+            <div className="json-key">{key}</div>
+
+            {typeof value === "object" ? (
+              <div className="json-nested-box">
+                <JsonNode data={value} />
+              </div>
+            ) : (
+              <div className="json-value-box">{String(value)}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <div className="json-value-box">{String(data)}</div>;
+};
 
 export default ScanTypePage;
