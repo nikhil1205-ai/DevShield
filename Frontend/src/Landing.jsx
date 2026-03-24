@@ -9,7 +9,7 @@ const Landing = () => {
         <div className="nav-container">
           <div className="nav-brand">
             <span className="logo-icon">🛡️</span>
-            <span className="logo-text">ShieldNet</span>
+            <span className="logo-text">DevShield</span>
             <span className="logo-tagline">Developer-First Security</span>
           </div>
           <div className="nav-links">
@@ -32,7 +32,7 @@ const Landing = () => {
         <div className="hero-content">
           <div className="badge">v1.0 Now Live</div>
           <h1>Secure your code <br/><span className="text-gradient">Without the complexity</span></h1>
-          <p>ShieldNet scans your projects, detects leaks, and suggests fixes in plain English. Built for students, startups, and developers who just want to ship safe apps.</p>
+          <p>DevShield scans your projects, detects leaks, and suggests fixes in plain English. Built for students, startups, and developers who just want to ship safe apps.</p>
           <div className="hero-buttons">
             <button className="btn btn-lg btn-primary">
               Scan Your First Project
@@ -73,7 +73,7 @@ const Landing = () => {
             <div className="feature-card">
               <div className="f-icon">🤖</div>
               <h3>AI Fixes</h3>
-              <p>ShieldNet doesn't just find problems; it shows you exactly how to fix them.</p>
+              <p>DevShield doesn't just find problems; it shows you exactly how to fix them.</p>
             </div>
             <div className="feature-card">
               <div className="f-icon">📈</div>
@@ -122,11 +122,11 @@ const Landing = () => {
       <footer className="footer">
         <div className="footer-grid">
           <div className="footer-info">
-            <h4>ShieldNet</h4>
+            <h4>DevShield</h4>
             <p>Simple, developer-first security for the next generation of creators.</p>
           </div>
           <div className="footer-copy">
-            <p>© 2026 ShieldNet Platform. Built for developers.</p>
+            <p>© 2026 DevShield Platform. Built for developers.</p>
           </div>
         </div>
       </footer>

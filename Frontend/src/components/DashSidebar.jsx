@@ -41,7 +41,7 @@ const DashSidebar = () => {
           <div className="brand-icon-wrapper">
             <ShieldIcon className="brand-logo-icon" />
           </div>
-          {!collapsed && <span className="brand-name">ShieldNet</span>}
+          {!collapsed && <span className="brand-name">DevShield</span>}
         </div>
 
         {/* NAVIGATION */}

@@ -17,7 +17,7 @@ const NavBar = () => {
         <div className="header-group-left">
           <div className="header-logo-stack">
             <div className="logo-accent">S</div>
-            <span className="logo-text">ShieldNet</span>
+            <span className="logo-text">DevShield</span>
           </div>
           
           <div className="header-v-divider" />
