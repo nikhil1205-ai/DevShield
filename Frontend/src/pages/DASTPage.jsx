@@ -82,6 +82,34 @@ const ScanTypePage = () => {
 
   };
 
+const handleLogAnalysis = async (file) => {
+  if (!file) return;
+
+  setIsLoading(true); // ✅ start loading
+
+  try {
+    let logContent = await file.text();
+
+    const response = await api.post(
+      "/api/scan/dynamicscan/logs",
+      { logs: logContent }
+    );
+
+    DASTsetResults(prev => [
+      ...prev,
+      { scanType: "Log Analysis", data: response.data }
+    ]);
+
+  } catch (error) {
+    console.error(
+      "Log Analysis failed:",
+      error.response?.data || error.message
+    );
+  }
+
+  setIsLoading(false); // ✅ stop loading
+};
+
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 p-8 font-sans">
       <div className="max-w-6xl mx-auto">
@@ -129,7 +157,7 @@ const ScanTypePage = () => {
                 {selectedType  === 'website' && <WebsiteScanUI onStart={handleWebsiteScan} isLoading={isLoading} />}
                 {selectedType  === 'proxy' && <ProxyScanUI onStart={()=>{}} isLoading={isLoading} />}
                 {selectedType  === 'api' && <ApiScanUI onStart={handleApiSchemaScan} isLoading={isLoading} />}
-                {selectedType  === 'logs' && <LogScanUI onStart={() => {}} isLoading={isLoading} />}
+                {selectedType  === 'logs' && <LogScanUI onStart={handleLogAnalysis} isLoading={isLoading} />}
               </motion.div>
             )}
           </AnimatePresence>
@@ -177,8 +205,6 @@ const ScanTypePage = () => {
     </div>
   );
 };
-
-/* --- INPUT SECTIONS (FORMAT KEPT SAME) --- */
 
 const WebsiteScanUI = ({ onStart, isLoading }) => {
   
@@ -332,54 +358,166 @@ const ApiScanUI = ({ onStart, isLoading }) => {
 };
 
 
-const LogScanUI = ({ onStart, isLoading }) => (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-      <Terminal className="text-indigo-500" /> Log Analysis
-    </h2>
-    <div className="grid md:grid-cols-2 gap-4">
-       <input placeholder="Log streaming endpoint" className="bg-black/40 border border-slate-700 p-3 rounded-lg" />
-       <input placeholder="Docker container name" className="bg-black/40 border border-slate-700 p-3 rounded-lg" />
+const LogScanUI = ({ onStart, isLoading }) => {
+  const [file, setFile] = React.useState(null);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+
+    if (selectedFile && !selectedFile.name.match(/\.(log|txt)$/)) {
+      alert("Only .log or .txt files allowed");
+      return;
+    }
+
+    setFile(selectedFile);
+  };
+  const handleStart = () => {
+    if (!file) return;
+    onStart(file); // calls handleLogAnalysis
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Heading */}
+      <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+        <Terminal className="text-indigo-500" /> Log Analysis
+      </h2>
+
+      {/* Upload Card */}
+      <div className="border-2 border-dashed border-slate-700 rounded-xl p-6 bg-black/40 text-center hover:border-indigo-500 transition">
+        <input
+          type="file"
+          accept=".log,.txt"
+          onChange={handleFileChange}
+          className="text-slate-300"
+        />
+
+        <p className="text-sm text-slate-400 mt-2">
+          Upload your log file (.log, .txt)
+        </p>
+
+        {file && (
+          <p className="text-indigo-400 mt-3 text-sm">
+            Selected: {file.name}
+          </p>
+        )}
+      </div>
+
+      {/* Info Section */}
+      <div className="bg-black/30 border border-slate-800 rounded-xl p-4 text-sm text-slate-300">
+        <p className="font-semibold text-white mb-2">Analysis includes:</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Error & exception detection</li>
+          <li>Brute force attempt detection</li>
+          <li>SQL injection patterns</li>
+          <li>Sensitive data exposure</li>
+        </ul>
+      </div>
+
+      {/* Button */}
+      <button
+        onClick={handleStart}
+        disabled={!file || isLoading}
+        className={`w-full py-4 rounded-xl font-bold transition ${
+          !file || isLoading
+            ? "bg-slate-700 cursor-not-allowed"
+            : "bg-indigo-600 hover:bg-indigo-500"
+        }`}
+      >
+        {isLoading ? "Analyzing Logs..." : "Start Log Analysis"}
+      </button>
     </div>
-    <button className="w-full bg-indigo-600 py-4 rounded-xl font-bold">Start Log Analysis</button>
-  </div>
-);
+  );
+};
 
 
-const JsonNode = ({ data }) => {
+const JsonNode = ({ data, level = 0 }) => {
+  const [collapsed, setCollapsed] = React.useState(false);
+
+  const getSeverityColor = (value) => {
+    if (typeof value !== "string") return "";
+    const v = value.toLowerCase();
+
+    if (v.includes("critical")) return "text-red-500";
+    if (v.includes("high")) return "text-red-400";
+    if (v.includes("medium")) return "text-yellow-400";
+    if (v.includes("low")) return "text-green-400";
+
+    return "text-slate-300";
+  };
+
+  // ARRAY
   if (Array.isArray(data)) {
     return (
-      <div className="json-array">
+      <div className="ml-4 border-l border-slate-700 pl-4 space-y-2">
         {data.map((item, index) => (
-          <div key={index} className="json-array-item">
-            <JsonNode data={item} />
+          <div key={index} className="bg-black/30 rounded-lg p-3">
+            <JsonNode data={item} level={level + 1} />
           </div>
         ))}
       </div>
     );
   }
 
+  // OBJECT
   if (typeof data === "object" && data !== null) {
     return (
-      <div className="json-object">
-        {Object.entries(data).map(([key, value]) => (
-          <div key={key} className="json-row">
-            <div className="json-key">{key}</div>
+      <div className="ml-2">
+        {Object.entries(data).map(([key, value]) => {
+          const isObject = typeof value === "object";
 
-            {typeof value === "object" ? (
-              <div className="json-nested-box">
-                <JsonNode data={value} />
+          return (
+            <div
+              key={key}
+              className="flex flex-col mb-2 bg-slate-900/40 rounded-lg p-3 border border-slate-800"
+            >
+              {/* Key Row */}
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => isObject && setCollapsed(!collapsed)}
+              >
+                <span className="text-indigo-400 font-semibold text-sm">
+                  {key}
+                </span>
+
+                {isObject && (
+                  <span className="text-xs text-slate-500">
+                    {collapsed ? "▶" : "▼"}
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className="json-value-box">{String(value)}</div>
-            )}
-          </div>
-        ))}
+
+              {/* Value */}
+              {!collapsed && (
+                <div className="mt-2">
+                  {isObject ? (
+                    <div className="bg-black/30 rounded-lg p-2">
+                      <JsonNode data={value} level={level + 1} />
+                    </div>
+                  ) : (
+                    <div
+                      className={`text-sm break-words ${getSeverityColor(
+                        value
+                      )}`}
+                    >
+                      {String(value)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   }
 
-  return <div className="json-value-box">{String(data)}</div>;
+  // PRIMITIVE
+  return (
+    <span className={`text-sm ${getSeverityColor(data)}`}>
+      {String(data)}
+    </span>
+  );
 };
 
 export default ScanTypePage;

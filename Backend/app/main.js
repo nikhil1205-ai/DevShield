@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
+import { spawn } from "child_process";
 import unzipper from "unzipper";
 import cors from "cors";
 import StaticScan from "../Routes/StaticScan.js"
@@ -88,13 +88,52 @@ app.post("/api/scan", upload.any(), async (req, res) => {
         });
       }
 
-      await new Promise((resolve, reject) => {
-        exec(
-          `git clone --depth=1 ${repoUrl} "${workspace}"`,
-          { timeout: 60_000 },
-          (err) => (err ? reject(err) : resolve())
-        );
-      });
+    let fixedRepoUrl = repoUrl.trim();
+
+if (!fixedRepoUrl.startsWith("http")) {
+  fixedRepoUrl = "https://" + fixedRepoUrl;
+}
+
+if (!fixedRepoUrl.endsWith(".git")) {
+  fixedRepoUrl += ".git";
+}
+
+console.log("🔥 FINAL URL:", fixedRepoUrl);
+
+await new Promise((resolve, reject) => {
+  console.log("🚀 Cloning repo...");
+
+  const gitProcess = spawn("git", [
+    "clone",
+    "--depth=1",
+    fixedRepoUrl,
+    workspace
+  ]);
+
+  gitProcess.stdout.on("data", (data) => {
+    console.log("STDOUT:", data.toString());
+  });
+
+  gitProcess.stderr.on("data", (data) => {
+    console.error("❌ GIT ERROR FULL:", data.toString());
+  });
+
+  gitProcess.on("error", (err) => {
+    console.error("❌ Spawn Error:", err);
+    reject(err);
+  });
+
+  gitProcess.on("close", (code) => {
+    console.log("Exit code:", code);
+
+    if (code === 0) {
+      resolve();
+    } else {
+      reject(new Error(`Git clone failed with code ${code}`));
+    }
+  });
+});
+
     }
 
     /* ---------- ZIP ---------- */
@@ -147,12 +186,13 @@ app.post("/api/scan", upload.any(), async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Scan failed:", err.message);
+    console.error("❌ Scan failed:", err);
+
     deleteWorkspace(scanId, safeName);
 
     return res.status(500).json({
       success: false,
-      error: err.message
+      error: err.message || "Internal error"
     });
   }
 });

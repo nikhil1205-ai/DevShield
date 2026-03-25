@@ -34,13 +34,13 @@ const initialHistory = [
 ];
 
 const chartData = [
-  { name: 'Mon', vulns: 4 },
-  { name: 'Tue', vulns: 2 },
+  { name: 'Mon', vulns: 4  },
+  { name: 'Tue', vulns: 2  },
   { name: 'Wed', vulns: 12 },
-  { name: 'Thu', vulns: 3 },
-  { name: 'Fri', vulns: 5 },
-  { name: 'Sat', vulns: 0 },
-  { name: 'Sun', vulns: 1 },
+  { name: 'Thu', vulns: 3  },
+  { name: 'Fri', vulns: 5  },
+  { name: 'Sat', vulns: 0  },
+  { name: 'Sun', vulns: 1  },
 ];
 
 const severityData = [

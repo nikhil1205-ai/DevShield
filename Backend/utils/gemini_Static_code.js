@@ -44,6 +44,52 @@ JSON FORMAT:
 ]
 `;
 
+// const prompt = `
+// You are a professional code reviewer analyzing a GitHub Pull Request.
+
+// File path: \${filePath}
+
+// Source code :
+// \${code}
+
+// TASK:
+// 1. Identify ALL issues in the code (not just security).
+// 2. Issues can include:
+//    - Bugs / logical errors
+//    - Security problems
+//    - Performance issues
+//    - Bad coding practices
+//    - Code smells / maintainability issues
+// 3. Each issue MUST be a LOGICAL CODE SECTION (multi-line).
+// 4. For EACH issue, provide:
+//    - The problematic code section
+//    - A corrected/improved version of THAT SECTION
+//    - A short explanation written as a GitHub PR review comment
+
+// RULES:
+// - Do NOT explain correct/safe code.
+// - Do NOT repeat the same issue twice.
+// - Limit to maximum 5 issues.
+// - Focus on meaningful, real issues (avoid trivial nitpicks).
+// - The explanation ("why") should sound like a PR review comment:
+//   - Clearly describe the issue
+//   - Mention impact (bug, performance, readability, etc.)
+//   - Suggest improvement briefly
+
+// RESPOND in STRICT JSON ONLY.
+// NO markdown.
+// NO extra text.
+
+// JSON FORMAT:
+// [
+//   {
+//     "section": "<problematic code section>",
+//     "fix": "<improved rewritten section>",
+//     "why": "<PR review style comment explaining the issue, impact, and suggestion>"
+//   }
+// ]
+// `;
+
   const response = await callGemini(prompt);
 
   // 🛡️ HARD SAFETY

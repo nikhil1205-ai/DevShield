@@ -1,6 +1,7 @@
 import express from "express";
 import axios from "axios";
 import {Gemini_APISchema} from "../utils/gemini_API_Schema_code.js";
+import {Gemini_LogAnalysis} from "../utils/gemini_Log_Analysis.js"
 
 const router = express.Router();
 
@@ -56,6 +57,25 @@ router.post("/apiSchema", async (req, res) => {
 
   }
 
+});
+
+router.post("/logs", async (req, res) => {
+  try {
+    const { logs } = req.body;
+
+    if (!logs) {
+      return res.status(400).json({ error: "Logs are required" });
+    }
+    const llmResult = await Gemini_LogAnalysis(logs);
+    const finalResult = {
+      llm_analysis: JSON.parse(llmResult) 
+    };
+    res.json(finalResult);
+
+  } catch (error) {
+    console.error("Log analysis error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 

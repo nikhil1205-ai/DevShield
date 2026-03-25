@@ -7,8 +7,47 @@ import {
   CheckCircle
 } from "@mui/icons-material";
 
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+
+
+
 const Report = () => {
   const { scanId, SATSresults, DASTresults } = useScanContext();
+
+    const downloadPDF = async () => {
+    const element = document.getElementById("report-container");
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const imgWidth = 210; // A4 width
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Multi-page support
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`DevShield_Report_${scanId || "scan"}.pdf`);
+  };
 
   // -----------------------------
   // ✅ COUNT LOGIC (UPDATED)
@@ -27,6 +66,10 @@ const Report = () => {
 
   const apiScan = DASTresults?.find(
     (r) => r.scanType === "API Schema Scan"
+  );
+
+  const logScan = DASTresults?.find(
+  (r) => r.scanType === "Log Analysis"
   );
 
   const dastCount =
@@ -55,8 +98,10 @@ const Report = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
-      <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-sm border border-slate-200 overflow-hidden">
-
+      <div
+        id="report-container"
+        className="max-w-5xl mx-auto bg-white shadow-2xl rounded-sm border border-slate-200 overflow-hidden"
+      >
         {/* HEADER */}
         <header className="bg-slate-900 text-white p-10">
           <div className="flex justify-between items-start">
@@ -215,6 +260,81 @@ const Report = () => {
             ) : (
               <EmptyState message="No Runtime Vulnerabilities Found" />
             )}
+{logScan && (
+  <>
+    {/* LOG ISSUES */}
+    {logScan.data?.llm_analysis?.issues?.map((issue, i) => (
+      <div key={`log-${i}`} className="border rounded p-4">
+        
+        <div className="flex justify-between">
+          <p className="font-bold text-sm">{issue.type}</p>
+
+          <span
+            className={`text-xs font-bold ${
+              issue.severity === "HIGH"
+                ? "text-red-600"
+                : issue.severity === "MEDIUM"
+                ? "text-amber-600"
+                : "text-gray-500"
+            }`}
+          >
+            {issue.severity}
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-xs text-slate-600 mt-2">
+          {issue.description}
+        </p>
+
+        {/* Affected Log */}
+        <div className="mt-2">
+          <p className="text-[10px] text-slate-400">Affected Log</p>
+          <pre className="bg-red-50 text-red-700 text-xs p-2 rounded">
+            {issue.affected_log}
+          </pre>
+        </div>
+
+        {/* Reason */}
+        <p className="text-xs text-slate-500 mt-2 italic">
+          {issue.reason}
+        </p>
+
+      </div>
+    ))}
+
+    {/* SUMMARY */}
+    {logScan.data?.llm_analysis?.summary && (
+      <div className="border rounded p-4 bg-slate-50">
+        <p className="text-sm font-bold mb-2">
+          Log Analysis Summary
+        </p>
+
+        <p className="text-xs text-slate-600">
+          Total Issues:{" "}
+          {logScan.data.llm_analysis.summary.total_issues}
+        </p>
+
+        <p className="text-xs text-slate-600">
+          High Severity:{" "}
+          {logScan.data.llm_analysis.summary.high_severity_count}
+        </p>
+
+        <p className="text-xs text-slate-600">
+          Risk Level:{" "}
+          <span className="font-bold">
+            {logScan.data.llm_analysis.summary.risk_level}
+          </span>
+        </p>
+
+        <p className="text-xs text-slate-500 mt-2">
+          {logScan.data.llm_analysis.summary.message}
+        </p>
+      </div>
+    )}
+  </>
+)}
+
           </section>
 
         </div>
@@ -226,7 +346,28 @@ const Report = () => {
           </p>
         </footer>
       </div>
+
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-slate-400 text-sm">
+            Scan ID: {scanId || "DEVS-882-991"}
+          </p>
+        </div>
+
+        <div className="flex flex-col items-end gap-3">
+          <Shield sx={{ fontSize: 50 }} className="text-indigo-400" />
+
+          <button
+            onClick={downloadPDF}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-4 py-2 rounded shadow"
+          >
+            Download PDF
+          </button>
+        </div>
+      </div>
     </div>
+
+    
   );
 };
 
@@ -237,5 +378,6 @@ const EmptyState = ({ message }) => (
     <p className="text-slate-400">{message}</p>
   </div>
 );
+
 
 export default Report;
