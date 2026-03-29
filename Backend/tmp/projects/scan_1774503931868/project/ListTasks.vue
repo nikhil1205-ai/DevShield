@@ -1,0 +1,405 @@
+<template>
+  <v-row justify="center">
+    <v-col lg="12" class="px-0 py-5">
+      <v-card class="elevation-2 rounded-lg pa-md-6">
+        <v-row align="center" class="pa-4">
+          <v-col cols="12" sm="6">
+            <v-card-title
+              class="text-h5 font-weight-bold pa-0"
+              :style="{ color: $vuetify.theme.current.colors['on-surface'] }"
+            >
+              {{ $t('UserTestTable.titles.currentTasks') }}
+            </v-card-title>
+          </v-col>
+          <v-col cols="12" sm="6" class="text-sm-right">
+            <v-btn
+              color="primary"
+              variant="flat"
+              size="large"
+              class="text-capitalize w-100 w-md-auto"
+              rounded="lg"
+              :disabled="isTemplate"
+              @click="
+                () => {
+                  dialog = true
+                  task = new Task()
+                }
+              "
+            >
+              <v-icon start> mdi-plus-circle </v-icon>
+              {{ $t('buttons.addNewTask') }}
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-card-text>
+          <v-data-table
+            :headers="headers"
+            :items="allTasks"
+            :items-per-page="5"
+            :items-per-page-text="$t('common.table.itemsPerPage')"
+            class="elevation-0 rounded-lg"
+            style="background: #ffffff; border: 1px solid #e5e7eb"
+            :no-data-text="$t('UserTestTable.messages.noTasks')"
+          >
+            <!-- Custom Column Templates -->
+            <template #item.taskType="{ item }">
+              <v-chip
+                v-if="item.taskType"
+                :color="getTaskTypeColor(item.taskType)"
+                size="small"
+                variant="flat"
+              >
+                <v-icon start size="small">
+                  {{ getTaskTypeIcon(item.taskType) }}
+                </v-icon>
+                {{ getTaskTypeLabel(item.taskType) }}
+              </v-chip>
+              <span v-else class="text-grey-400">{{
+                $t('UserTestTable.headers.na')
+              }}</span>
+            </template>
+
+            <template #item.taskDescription="{ item }">
+              <v-icon :color="item.taskDescription ? 'success' : 'error'">
+                {{
+                  item.taskDescription
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <template #item.taskTip="{ item }">
+              <v-icon :color="item.taskTip ? 'success' : 'error'">
+                {{
+                  item.taskTip
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <template #item.hasScreenRecord="{ item }">
+              <v-icon :color="item.hasScreenRecord ? 'success' : 'error'">
+                {{
+                  item.hasScreenRecord
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <template #item.hasCamRecord="{ item }">
+              <v-icon :color="item.hasCamRecord ? 'success' : 'error'">
+                {{
+                  item.hasCamRecord
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <template #item.hasEye="{ item }">
+              <v-icon :color="item.hasEye ? 'success' : 'error'">
+                {{
+                  item.hasEye
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <template #item.hasAudioRecord="{ item }">
+              <v-icon :color="item.hasAudioRecord ? 'success' : 'error'">
+                {{
+                  item.hasAudioRecord
+                    ? 'mdi-checkbox-marked-circle-outline'
+                    : 'mdi-close-circle-outline'
+                }}
+              </v-icon>
+            </template>
+
+            <!-- Actions Column -->
+            <template #item.actions="{ item }">
+              <v-btn
+                icon
+                variant="text"
+                color="accent"
+                class="mr-2"
+                :disabled="isTemplate"
+                @click="editItem(item)"
+              >
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                color="error"
+                :disabled="isTemplate"
+                @click="deleteItem(item)"
+              >
+                <v-icon>mdi-trash-can-outline</v-icon>
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card-text>
+        <FormDialog
+          v-model:dialog="dialog"
+          v-model:task="task"
+          :is-template="isTemplate"
+          @add-task="addTask"
+        />
+      </v-card>
+    </v-col>
+
+    <v-dialog v-model="taskDeleteDialog" width="600" persistent>
+      <v-card>
+        <v-card-title class="text-h5 bg-error text-white" primary-title>
+          {{ $t('UserTestTable.messages.confirm_delete_task') }}
+        </v-card-title>
+        <v-card-text>{{ taskDeleteDialogText }}</v-card-text>
+        <v-divider />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="bg-grey-lighten-3"
+            variant="text"
+            @click="taskDeleteDialog = false"
+          >
+            {{ $t('buttons.cancel') }}
+          </v-btn>
+          <v-btn
+            class="bg-red text-white ml-1"
+            :loading="taskDeleteLoading"
+            :disabled="isTemplate"
+            variant="text"
+            @click="confirmTaskDeletion"
+          >
+            {{ $t('buttons.delete') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
+import FormDialog from './FormDialog.vue'
+import Task from '../models/Task'
+
+//const emit = defineEmits(['change'])
+const store = useStore()
+const { t } = useI18n()
+
+const dialog = ref(false)
+const allTasks = ref([])
+const editedIndex = ref(-1)
+const task = ref(new Task())
+
+const taskDeleteDialog = ref(false)
+const taskToDelete = ref(null)
+const taskDeleteLoading = ref(false)
+
+const headers = ref([
+  {
+    title: t('UserTestTable.headers.name'),
+    align: 'start',
+    sortable: false,
+    value: 'taskName',
+    width: '10%',
+  },
+  {
+    title: t('UserTestTable.headers.type'),
+    value: 'taskType',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.estimatedTime'),
+    value: 'estimatedTime',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.tip'),
+    value: 'taskTip',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.screenRecord'),
+    value: 'hasScreenRecord',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.camera'),
+    value: 'hasCamRecord',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.eyeTracker'),
+    value: 'hasEye',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.audioRecord'),
+    value: 'hasAudioRecord',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    title: t('UserTestTable.headers.actions'),
+    value: 'actions',
+    sortable: false,
+    align: 'center',
+    width: '150px',
+  },
+])
+
+const taskDeleteDialogText = computed(() =>
+  t('UserTestTable.messages.sure_to_delete_task', {
+    taskName: taskToDelete.value?.taskName,
+  }),
+)
+
+const props = defineProps({
+  isTemplate: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const editItem = (item) => {
+  if (props.isTemplate) return
+  editedIndex.value = allTasks.value.indexOf(item)
+  task.value = item
+  dialog.value = true
+}
+
+const deleteItem = async (item) => {
+  if (props.isTemplate) return
+  taskToDelete.value = item
+  taskDeleteDialog.value = true
+}
+
+const confirmTaskDeletion = async () => {
+  taskDeleteLoading.value = true
+  try {
+    const index = allTasks.value.indexOf(taskToDelete.value)
+    if (index > -1) {
+      allTasks.value.splice(index, 1)
+      await store.dispatch('UserStudy/setTasks', allTasks.value)
+    }
+  } catch {
+  } finally {
+    taskDeleteDialog.value = false
+    taskDeleteLoading.value = false
+    taskToDelete.value = null
+  }
+}
+
+const addTask = async (newTask) => {
+  if (props.isTemplate) return
+  try {
+    if (editedIndex.value > -1) {
+      Object.assign(allTasks.value[editedIndex.value], newTask.toFirestore())
+      editedIndex.value = -1
+    } else {
+      allTasks.value.push(newTask.toFirestore())
+    }
+    await store.dispatch('UserStudy/setTasks', allTasks.value)
+    task.value = new Task()
+    dialog.value = false
+  } catch {}
+}
+
+const setAllTasks = () => {
+  allTasks.value = Object.assign(
+    store.getters['UserStudy/tasks'],
+    store.state.Tests.Test.testStructure.userTasks,
+  )
+}
+
+// Helper functions for task type chips
+const getTaskTypeColor = (taskType) => {
+  const colors = {
+    'no-answer': 'grey',
+    'text-area': 'primary',
+    'post-test': 'secondary',
+    'post-form': 'success',
+    'nasa-tlx': 'warning',
+    sus: 'info',
+    'tam-1': 'deep-blue',
+    'tam-2': 'cyan',
+    'tam-3': 'teal',
+    sart: 'deep blue',
+  }
+  return colors[taskType] || 'grey'
+}
+
+const getTaskTypeIcon = (taskType) => {
+  const icons = {
+    'no-answer': 'mdi-minus-circle',
+    'text-area': 'mdi-text-box',
+    'post-test': 'mdi-clipboard-check',
+    'post-form': 'mdi-form-select',
+    'nasa-tlx': 'mdi-rocket',
+    sus: 'mdi-account-check',
+    'tam-1': 'mdi-chart-line',
+    'tam-2': 'mdi-chart-box',
+    'tam-3': 'mdi-chart-donut',
+    sart: 'mdi-chart-areaspline',
+  }
+  return icons[taskType] || 'mdi-help-circle'
+}
+
+const getTaskTypeLabel = (taskType) => {
+  const labels = {
+    'no-answer': t('switches.noAnswer'),
+    'text-area': t('switches.textArea'),
+    'post-test': t('switches.postTest'),
+    'post-form': t('switches.postForm'),
+    'nasa-tlx': t('switches.nasa'),
+    sus: t('switches.sus'),
+    'tam-1': 'TAM-1',
+    'tam-2': 'TAM-2',
+    'tam-3': 'TAM-3',
+    sart: t('switches.sart'),
+  }
+  return labels[taskType] || 'Unknown'
+}
+
+onMounted(() => {
+  setAllTasks()
+})
+</script>
+
+<style scoped>
+.v-data-table {
+  transition: all 0.3s ease;
+}
+
+.v-data-table :deep(.v-data-table__td) {
+  padding: 12px;
+}
+
+.v-data-table :deep(.v-data-table-header__content) {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.v-btn {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.v-data-table :deep(.v-data-table__tr:hover) {
+  background-color: #f8fafc;
+}
+</style>

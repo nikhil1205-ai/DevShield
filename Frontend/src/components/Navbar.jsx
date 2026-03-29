@@ -6,9 +6,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TuneIcon from '@mui/icons-material/Tune';
-import HubIcon from '@mui/icons-material/Hub'; // Alternative project icon
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const NavBar = () => {
+  const { user } = useContext(AuthContext);
   return (
     <nav className="header-root">
       <div className="header-inner">
@@ -60,13 +62,15 @@ const NavBar = () => {
           
           <div className="identity-block">
             <div className="identity-text">
-              <span className="user-display-name">John Developer</span>
+              <span className="user-display-name">
+                {user?.displayName || user?.email || "User"}
+              </span>
               <span className="user-tier-badge">Free Tier</span>
             </div>
-            <div className="user-avatar-wrap">
-              <img src="https://ui-avatars.com/api/?name=JD&background=3b82f6&color=fff" alt="User Avatar" />
-              <div className="online-status" />
-            </div>
+            <img 
+              src={`https://ui-avatars.com/api/?name=${user?.displayName}&background=3b82f6&color=fff`} 
+              alt="User Avatar" 
+            />
           </div>
         </div>
 

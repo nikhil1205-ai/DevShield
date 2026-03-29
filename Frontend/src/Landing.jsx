@@ -19,8 +19,8 @@ const Landing = () => {
             <a href="#privacy">Privacy</a>
           </div>
           <div className="nav-auth">
-            <button className="btn btn-ghost">Login</button>
-            <Link className="btn btn-neon" to="/dash">Get Started</Link>
+            <Link className="btn btn-ghost" to="/login">Login</Link>
+            <Link className="btn btn-neon ml-4" to="/signup">Get Started</Link>
           </div>
 
         </div>
@@ -34,12 +34,10 @@ const Landing = () => {
           <h1>Secure your code <br/><span className="text-gradient">Without the complexity</span></h1>
           <p>DevShield scans your projects, detects leaks, and suggests fixes in plain English. Built for students, startups, and developers who just want to ship safe apps.</p>
           <div className="hero-buttons">
-            <button className="btn btn-lg btn-primary">
+            <Link className="btn btn-lg btn-primary" to='/login'>
               Scan Your First Project
-            </button>
-            <button className="btn btn-lg btn-outline">
-              How it works
-            </button>
+            </Link>
+            <a className="btn btn-lg btn-outline" href="#how-it-works">How it works</a>
           </div>
 
         </div>
