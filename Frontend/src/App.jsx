@@ -12,7 +12,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Signup from "./auth/Signup.jsx";
 import Login from "./auth/Login.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
-
+import Settings from "./pages/Settings.jsx"
 function App() {
 
   return (
@@ -28,6 +28,7 @@ function App() {
           <Route element={ <ProtectedRoute> <ScanProvider> <DashLayout /></ScanProvider> </ProtectedRoute> }>
                 <Route path="/dash" element={<Dashboard />} />
                 <Route path="/reports" element={<Report />} />
+                <Route path="/settings" element={< Settings/>} />
           </Route>
 
           <Route element={<ProtectedRoute> <ScanProvider><ScanLayoutPage /></ScanProvider> </ProtectedRoute>}>
