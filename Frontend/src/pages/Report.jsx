@@ -6,16 +6,56 @@ import {
   Launch,
   CheckCircle
 } from "@mui/icons-material";
-
+import {saveScanToFirebase} from "../utils/firebase_report_store"
 
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-
+import { useEffect, useState } from "react";
+import { db, auth } from "../../firebase";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 
 const Report = () => {
-  const { scanId, SATSresults, DASTresults } = useScanContext();
+    const { scanId, SATSresults, DASTresults } = useScanContext();
+    const [firebaseData, setFirebaseData] = useState([]);
+    const [showPopup, setShowPopup] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
 
+    useEffect(() => {
+
+    const fetchScans = async () => {
+      if (scanId) return;
+
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const ref = collection(db, "users", user.uid, "scans");
+
+        // 🔥 Query: latest scan first
+        const q = query(ref, orderBy("createdAt", "desc"), limit(1));
+
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+          const latestScan = snapshot.docs[0].data();
+          setFirebaseData(latestScan); // store single object
+        }
+
+      } catch (err) {
+        console.error("Error fetching scans:", err);
+      }
+    };
+
+      fetchScans();
+    }, [scanId]);
+
+
+    const dataSource = scanId
+    ? { SATSresults, DASTresults }
+    : firebaseData || {};
+    const sastData = dataSource.SATSresults || [];
+    const dastData = dataSource.DASTresults || [];     
     const downloadPDF = async () => {
     const element = document.getElementById("report-container");
 
@@ -49,26 +89,23 @@ const Report = () => {
     pdf.save(`DevShield_Report_${scanId || "scan"}.pdf`);
   };
 
-  // -----------------------------
-  // ✅ COUNT LOGIC (UPDATED)
-  // -----------------------------
-  console.log(SATSresults);
-  console.log(DASTresults);
+  // console.log(SATSresults);
+  // console.log(DASTresults);
   const sastCount =
-    SATSresults?.reduce(
+    sastData?.reduce(
       (acc, file) => acc + (file.sections?.length || 0),
       0
     ) || 0;
 
-  const webScan = DASTresults?.find(
+  const webScan = dastData?.find(
     (r) => r.scanType === "Website URL Scan"
   );
 
-  const apiScan = DASTresults?.find(
+  const apiScan = dastData?.find(
     (r) => r.scanType === "API Schema Scan"
   );
 
-  const logScan = DASTresults?.find(
+  const logScan = dastData?.find(
   (r) => r.scanType === "Log Analysis"
   );
 
@@ -79,9 +116,7 @@ const Report = () => {
 
   const total = sastCount + dastCount;
 
-  // -----------------------------
-  // ✅ RISK LEVEL
-  // -----------------------------
+
   let risk = "Low";
   let riskColor = "text-emerald-500";
 
@@ -102,6 +137,12 @@ const Report = () => {
         id="report-container"
         className="max-w-5xl mx-auto bg-white shadow-2xl rounded-sm border border-slate-200 overflow-hidden"
       >
+
+        {!scanId && (
+          <p className="text-lg font-semibold text-blue-600 text-center mb-6 bg-blue-50 py-3 rounded-lg">
+            Showing previously saved scan data
+          </p>
+        )}
         {/* HEADER */}
         <header className="bg-slate-900 text-white p-10">
           <div className="flex justify-between items-start">
@@ -147,7 +188,7 @@ const Report = () => {
 
             {sastCount > 0 ? (
               <div className="space-y-6">
-                {SATSresults?.map((fileData, fileIdx) =>
+                {sastData?.map((fileData, fileIdx) =>
                   fileData.sections?.map((issue, idx) => (
                     <div key={`${fileIdx}-${idx}`} className="border rounded-lg overflow-hidden">
 
@@ -354,17 +395,48 @@ const Report = () => {
           </p>
         </div>
 
+      <button
+        onClick={async () => {
+          setLoadingSave(true);
+
+          const success = await saveScanToFirebase(scanId, SATSresults, DASTresults);
+
+          setLoadingSave(false);
+
+          if (success) {
+            setShowPopup(true);
+
+            setTimeout(() => {
+              setShowPopup(false);
+            }, 2500);
+          }
+        }}
+        disabled={!scanId || loadingSave}
+        className={`text-xs px-4 py-2 rounded shadow ${
+          scanId
+            ? "bg-indigo-500 hover:bg-indigo-600 text-white"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        }`}
+      >
+        {loadingSave ? "Saving..." : "Save to Cloud"}
+      </button>
+
         <div className="flex flex-col items-end gap-3">
           <Shield sx={{ fontSize: 50 }} className="text-indigo-400" />
 
           <button
             onClick={downloadPDF}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-4 py-2 rounded shadow"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-4 py-2 rounded shadow"
           >
             Download PDF
           </button>
         </div>
       </div>
+      {showPopup && (
+        <div className="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce">
+          ✅ Scan saved successfully!
+        </div>
+      )}
     </div>
 
     
