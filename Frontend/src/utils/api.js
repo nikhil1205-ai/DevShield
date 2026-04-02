@@ -1,7 +1,10 @@
 import axios from "axios";
 
+let prod=true;
+let BaseURL=prod ? "https://devshield-production.up.railway.app" :"http://localhost:5000"; 
+
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: BaseURL,
   withCredentials: true
 });
 
