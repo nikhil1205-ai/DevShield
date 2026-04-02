@@ -9,11 +9,22 @@ import StaticScan from "../Routes/StaticScan.js"
 import DynamicScan from "../Routes/DynamicScan.js"
 
 const app = express();
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://dev-shield-frontend.vercel.app"
+];
 app.use(cors({
-  origin: "http://localhost:5173", 
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
+
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage()
