@@ -197,6 +197,12 @@ await new Promise((resolve, reject) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "DevShield API is running 🚀"
+  });
+});
 
 app.use("/api/scan/staticscan",StaticScan);
 app.use("/api/scan/dynamicscan",DynamicScan);
