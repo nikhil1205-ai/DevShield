@@ -407,8 +407,6 @@ const ProxyScanUI = ({ onStart, isLoading }) => {
 
       {/* RIGHT SIDE */}
       <div className="bg-white/5 p-4 rounded-xl text-xs grid grid-cols-2 gap-2 text-slate-400">
-        <div>• Response status</div>
-        <div>• Response time</div>
         <div>• Header analysis</div>
         <div>• Security headers check</div>
         <div>• Data leak detection</div>
