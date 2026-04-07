@@ -1,6 +1,6 @@
 import axios from "axios";
 
-let prod=true;
+let prod=false;
 let BaseURL=prod ? "https://devshield-production.up.railway.app" :"http://localhost:5000"; 
 
 const api = axios.create({

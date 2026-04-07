@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vulnerable App</title>
+</head>
+<body>
+
+<h2>Login Page</h2>
+
+<form id="loginForm">
+    Email: <input type="text" id="email"><br><br>
+    Password: <input type="text" id="password"><br><br>
+    <button type="submit">Login</button>
+</form>
+
+<h2>Get User Data</h2>
+<input type="text" id="userId" placeholder="Enter User ID">
+<button onclick="getUser()">Fetch User</button>
+
+<div id="output"></div>
+
+<script>
+document.getElementById("loginForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("output").innerHTML = data; 
+    });
+};
+
+function getUser() {
+    let id = document.getElementById("userId").value;
+    fetch(`http://localhost:3000/users/${id}`)
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("output").innerHTML = data; 
+    });
+}
+</script>
+
+</body>
+</html>
