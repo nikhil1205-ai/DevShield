@@ -43,7 +43,7 @@ def delete_workspace(scan_id: int, project_name: str = "projects"):
         shutil.rmtree(scan_path, ignore_errors=True)
 
 # -------------------------------------------------------------
-# HEALTH CHECK
+# HEALTH CHECK / UPTIME ROBOT
 # -------------------------------------------------------------
 @app.get("/")
 async def root():
@@ -51,6 +51,15 @@ async def root():
         "status": "OK",
         "message": "DevShield Unified Python API is running 🚀"
     }
+
+@app.get("/ping")
+@app.head("/ping")
+async def ping():
+    return {"status": "OK", "message": "pong"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "OK", "uptime": "running"}
 
 # -------------------------------------------------------------
 # WORKSPACE CREATION & SOURCE INGESTION
