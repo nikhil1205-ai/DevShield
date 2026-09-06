@@ -12,11 +12,14 @@ import { AuthProvider } from "./context/AuthContext";
 import Signup from "./auth/Signup.jsx";
 import Login from "./auth/Login.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
-import Settings from "./pages/Settings.jsx"
+import Settings from "./pages/Settings.jsx";
+import GlobalError from "./components/GlobalError.jsx";
+
 function App() {
 
   return (
     <AuthProvider>
+      <GlobalError />
       <Router>
         <Routes>
 

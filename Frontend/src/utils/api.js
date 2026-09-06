@@ -7,4 +7,20 @@ const api = axios.create({
   withCredentials: true
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.message ||
+      "An unexpected error occurred.";
+      
+    const event = new CustomEvent("api-error", { detail: message });
+    window.dispatchEvent(event);
+    
+    return Promise.reject(error);
+  }
+);
+
 export default api;
