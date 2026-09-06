@@ -1,7 +1,6 @@
 import axios from "axios";
 
-let prod=false;
-let BaseURL=prod ? "https://devshield-production.up.railway.app" :"http://localhost:5000"; 
+const BaseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const api = axios.create({
   baseURL: BaseURL,
@@ -9,4 +8,3 @@ const api = axios.create({
 });
 
 export default api;
-

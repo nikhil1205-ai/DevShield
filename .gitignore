@@ -5,3 +5,9 @@ Backend/temp/
 DASTBackend/myenv
 DASTBackend/dastenv
 Frontend/.env
+Backend-Full/.env
+Backend-Full/Gemini.txt
+Backend-Full/.venv
+Backend-Full/__pycache__
+DASTBackend/.venv
+DASTBackend/__pycache__
