@@ -74,9 +74,53 @@
 
 /* CODE BLOCKS */
 .code-block {
-  background: #020617; padding: 1.2rem; border-radius: 10px; border: 1px solid #1e293b;
-  font-family: 'Fira Code', monospace; font-size: 0.85rem; height: 100%;
+  background: #020617;
+  padding: 1.2rem;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+  font-size: 0.85rem;
+  height: 100%;
+  overflow-x: auto;
+  max-width: 100%;
 }
+
+.code-block pre {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  white-space: pre;
+  word-wrap: normal;
+}
+
+.code-block code {
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+  white-space: pre;
+}
+
+.code-block::-webkit-scrollbar,
+.code-block pre::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.code-block::-webkit-scrollbar-track,
+.code-block pre::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 10px;
+}
+
+.code-block::-webkit-scrollbar-thumb,
+.code-block pre::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover,
+.code-block pre::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 .code-block.original { border-left: 4px solid #ef4444; }
 .code-block.suggestion { border-left: 4px solid #22c55e; }
 
