@@ -15,12 +15,15 @@ import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import Settings from "./pages/Settings.jsx";
 import GlobalError from "./components/GlobalError.jsx";
 
+import { ToastProvider } from "./context/ToastContext";
+
 function App() {
 
   return (
     <AuthProvider>
-      <GlobalError />
-      <Router>
+      <ToastProvider>
+        <GlobalError />
+        <Router>
         <Routes>
 
           <Route path="/login" element={<Login />} />
@@ -42,6 +45,7 @@ function App() {
 
         </Routes>
       </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

@@ -3,9 +3,29 @@ import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase.js";
 import { Shield, Google, Email,Visibility,VisibilityOff, Lock, Login as LoginIcon, ArrowBackIosNew } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
+
+const formatAuthError = (err) => {
+  if (!err) return "An unexpected error occurred.";
+  const code = err.code || "";
+  if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
+    return "Invalid email or password. Please try again.";
+  }
+  if (code === "auth/invalid-email") {
+    return "Please enter a valid email address.";
+  }
+  if (code === "auth/user-disabled") {
+    return "This user account has been disabled.";
+  }
+  if (code === "auth/too-many-requests") {
+    return "Too many failed login attempts. Please try again later.";
+  }
+  return err.message ? err.message.replace("Firebase: ", "") : "Login failed.";
+};
 
 const Login = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const handleChange = (e) => {
@@ -13,21 +33,27 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+    if (!form.email || !form.password) {
+      showToast("Please fill in both email and password.", "warning");
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, form.email, form.password);
-      alert("Login successful");
-      navigate("/dash"); 
+      showToast("Login successful! Redirecting...", "success");
+      setTimeout(() => navigate("/dash"), 500); 
     } catch (err) {
-      alert(err.message);
+      showToast(formatAuthError(err), "error");
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      navigate("/dash"); 
+      await signInWithPopup(auth, googleProvider);
+      showToast("Logged in with Google successfully!", "success");
+      setTimeout(() => navigate("/dash"), 500); 
     } catch (err) {
-      alert(err.message);
+      showToast(formatAuthError(err), "error");
     }
   };
 

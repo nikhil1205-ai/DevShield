@@ -6,10 +6,42 @@ from .gemini_client import call_gemini
 IGNORE_DIRS = {"node_modules", ".git", "__pycache__", "tmp", "venv", ".venv"}
 IGNORE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".ico", ".svg", ".zip", ".tar", ".gz", ".exe", ".pdf", ".lock"}
 
+STATIC_RULES = [
+    {
+        "pattern": r"(?i)(api[_-]?key|secret[_-]?key|password|auth[_-]?token)\s*=\s*['\"][A-Za-z0-9_\-]{8,}['\"]",
+        "why": "Hardcoded credentials or API secrets found in source code. This exposes sensitive credentials in production or version control.",
+        "fix_template": "# Use environment variables instead of hardcoded secrets\nimport os\nSECRET = os.getenv('MY_SECRET_KEY')"
+    },
+    {
+        "pattern": r"(?i)eval\s*\(",
+        "why": "Use of dynamic code evaluation (`eval`). This can allow arbitrary code execution (RCE) if user input reaches it.",
+        "fix_template": "# Avoid eval(). Parse structured data safely using json.loads() or safer domain-specific functions."
+    },
+    {
+        "pattern": r"(?i)exec\s*\(",
+        "why": "Use of `exec` to run arbitrary python code strings. High risk of Remote Code Execution (RCE).",
+        "fix_template": "# Avoid exec(). Implement explicit function maps or logic handlers instead."
+    },
+    {
+        "pattern": r"(?i)shell\s*=\s*True",
+        "why": "Command execution with `shell=True` enables OS Command Injection if untrusted strings are passed.",
+        "fix_template": "# Pass arguments as a list with shell=False:\nsubprocess.run(['command', arg1, arg2], check=True)"
+    },
+    {
+        "pattern": r"(?i)(SELECT|INSERT|UPDATE|DELETE).*\+.*|\bSELECT\b.*f['\"].*\{",
+        "why": "Potential SQL Injection via string formatting or concatenation.",
+        "fix_template": "# Use parameterized queries or ORM bindings:\ncursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))"
+    },
+    {
+        "pattern": r"dangerouslySetInnerHTML",
+        "why": "Direct insertion of raw HTML into DOM via dangerouslySetInnerHTML can cause Cross-Site Scripting (XSS).",
+        "fix_template": "// Sanitize HTML content with DOMPurify or render plain text children instead:\n<div>{DOMPurify.sanitize(content)}</div>"
+    }
+]
+
 def walk_files(dir_path: str):
     file_list = []
     for root, dirs, files in os.walk(dir_path):
-        # Prune ignored directories
         dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
         for f in files:
             if f == "README.md":
@@ -30,10 +62,29 @@ def read_file_safe(file_path: str) -> str:
 def clean_json_response(text: str) -> str:
     if not text:
         return ""
-    # Strip markdown code fence block if present
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
     cleaned = re.sub(r"\s*```$", "", cleaned.strip(), flags=re.MULTILINE)
     return cleaned.strip()
+
+def static_rule_scan(code: str):
+    findings = []
+    lines = code.split("\n")
+    for rule in STATIC_RULES:
+        for idx, line in enumerate(lines):
+            if re.search(rule["pattern"], line):
+                start = max(0, idx - 1)
+                end = min(len(lines), idx + 2)
+                snippet = "\n".join(lines[start:end])
+                findings.append({
+                    "section": snippet,
+                    "fix": rule["fix_template"],
+                    "why": rule["why"]
+                })
+                if len(findings) >= 5:
+                    break
+        if len(findings) >= 5:
+            break
+    return findings
 
 def explain_with_gemini(code: str, file_path: str):
     prompt = f"""
@@ -104,10 +155,15 @@ def run_static_scan(scan_folder: str):
         if not code or not code.strip():
             continue
 
-        # Slicing top 300 lines to protect tokens
         limited_code = "\n".join(code.split("\n")[:300])
 
+        # 1. Try Gemini AI analysis
         ai_sections = explain_with_gemini(limited_code, file_path)
+
+        # 2. If AI returns empty or failed, fallback to local static rule analysis
+        if not ai_sections:
+            ai_sections = static_rule_scan(limited_code)
+
         if not ai_sections:
             continue
 

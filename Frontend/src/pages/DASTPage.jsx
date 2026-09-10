@@ -12,12 +12,14 @@ import {
 } from '@mui/icons-material';
 import api from "../utils/api";
 import { useScanContext } from "../context/ScanContext";
+import { useToast } from "../context/ToastContext";
 import yaml from "js-yaml";
 
 const ScanTypePage = () => {
   const [selectedType, setSelectedType] = useState('website');
   const [isLoading, setIsLoading] = useState(false);
   const {scanId,DASTresults,DASTsetResults} = useScanContext();
+  const { showToast } = useToast();
 
 
   const scanOptions = [
@@ -38,16 +40,20 @@ const ScanTypePage = () => {
           try {
             const response = await api.post("/api/scan/dynamicscan/", { url }); 
             DASTsetResults(prev => [...prev,{scanType: "Website URL Scan",data: response.data}]);
+            showToast("Website scan completed successfully!", "success");
           } catch (err) {
+              const errMsg = err.response?.data?.detail || err.response?.data?.message || err.message || `${err}`;
               DASTsetResults(prev => [
                 ...prev,
-                { type: "Website Scan", error: `${err}`}
+                { type: "Website Scan", error: errMsg }
               ]);
+              showToast(`Website scan failed: ${errMsg}`, "error");
           }
           setIsLoading(false);
     };
 
   const handleApiSchemaScan = async ({ file, schemaText }) => {
+      setIsLoading(true);
       try {
         let schema = null;
         // If file uploaded
@@ -72,12 +78,16 @@ const ScanTypePage = () => {
           { schema }
         );
         DASTsetResults(prev => [...prev,{scanType: "API Schema Scan",data: response.data}]);
-
+        showToast("API Schema scan completed successfully!", "success");
       } catch (error) {
+        const errMsg = error.response?.data?.detail || error.response?.data?.message || error.message || "Schema scan failed.";
+        showToast(`API Schema Scan failed: ${errMsg}`, "error");
         console.error(
           "API Schema Scan failed:",
-          error.response?.data || error.message
+          error
         );
+      } finally {
+        setIsLoading(false);
       }
 
   };
@@ -99,15 +109,17 @@ const handleLogAnalysis = async (file) => {
       ...prev,
       { scanType: "Log Analysis", data: response.data }
     ]);
-
+    showToast("Log analysis completed successfully!", "success");
   } catch (error) {
+    const errMsg = error.response?.data?.detail || error.response?.data?.message || error.message || "Log analysis failed.";
+    showToast(`Log analysis failed: ${errMsg}`, "error");
     console.error(
       "Log Analysis failed:",
-      error.response?.data || error.message
+      error
     );
+  } finally {
+    setIsLoading(false); // ✅ stop loading
   }
-
-  setIsLoading(false); // ✅ stop loading
 };
 
 
@@ -362,10 +374,11 @@ const WebsiteScanUI = ({ onStart, isLoading }) => {
 
 const ProxyScanUI = ({ onStart, isLoading }) => {
   const [url, setUrl] = React.useState("");
+  const { showToast } = useToast();
 
   const handleStart = () => {
     if (!url) {
-      alert("Please enter a URL");
+      showToast("Please enter a URL", "warning");
       return;
     }
 
@@ -417,14 +430,13 @@ const ProxyScanUI = ({ onStart, isLoading }) => {
 };
 
 const ApiScanUI = ({ onStart, isLoading }) => {
-
   const [file, setFile] = useState(null);
   const [schemaText, setSchemaText] = useState("");
+  const { showToast } = useToast();
 
   const handleSubmit = () => {
-
     if (!file && !schemaText) {
-      alert("Upload a schema file or paste OpenAPI schema");
+      showToast("Upload a schema file or paste OpenAPI schema", "warning");
       return;
     }
 
@@ -487,12 +499,13 @@ const ApiScanUI = ({ onStart, isLoading }) => {
 
 const LogScanUI = ({ onStart, isLoading }) => {
   const [file, setFile] = React.useState(null);
+  const { showToast } = useToast();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
 
     if (selectedFile && !selectedFile.name.match(/\.(log|txt)$/)) {
-      alert("Only .log or .txt files allowed");
+      showToast("Only .log or .txt files allowed", "warning");
       return;
     }
 

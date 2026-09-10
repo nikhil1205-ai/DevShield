@@ -2,10 +2,12 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase.js";
 import { Shield, Google, Person, Email, Lock,ArrowForward,Visibility, VisibilityOff , ArrowBackIosNew} from "@mui/icons-material";
-import { Link,useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -20,12 +22,12 @@ const Signup = () => {
 
   const handleSignup = async () => {
     if (!form.name || !form.email || !form.password) {
-      alert("All fields are required");
+      showToast("All fields are required", "warning");
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match");
+      showToast("Passwords do not match", "warning");
       return;
     }
 
@@ -40,12 +42,13 @@ const Signup = () => {
         displayName: form.name
       });
 
-      navigate("/dash"); 
+      showToast("Account created successfully! Welcome to DevShield.", "success");
+      setTimeout(() => navigate("/dash"), 500); 
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
-        alert("Email already registered");
+        showToast("Email already registered. Please log in instead.", "error");
       } else {
-        alert(err.message);
+        showToast(err.message ? err.message.replace("Firebase: ", "") : "Signup failed.", "error");
       }
     }
   };
@@ -53,9 +56,10 @@ const Signup = () => {
   const handleGoogleSignup = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate("/dash"); 
+      showToast("Signed up with Google successfully!", "success");
+      setTimeout(() => navigate("/dash"), 500); 
     } catch (err) {
-      alert(err.message);
+      showToast(err.message ? err.message.replace("Firebase: ", "") : "Google signup failed.", "error");
     }
   };
 

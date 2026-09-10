@@ -8,9 +8,11 @@ import FolderZipIcon from "@mui/icons-material/FolderZip";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import api from "../utils/api";
 import { useScanContext } from "../context/ScanContext";
+import { useToast } from "../context/ToastContext";
 
 const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
   const [step, setStep] = useState(1);
+  const [modalError, setModalError] = useState(null);
 
   // STEP-1 data
   const [projectName, setProjectName] = useState("");
@@ -22,7 +24,8 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
 
   // UX lock
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { scanId,setScanId} = useScanContext();
+  const { scanId, setScanId } = useScanContext();
+  const { showToast } = useToast();
 
   if (!isOpen) return null;
 
@@ -48,6 +51,7 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    setModalError(null);
 
     const formData = new FormData();
     formData.append("projectName", projectName);
@@ -62,7 +66,7 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
     }
 
     if (sourceType === "folder") {
-      Array.from(zipFile).forEach((file) => {
+      Array.from(zipFile || []).forEach((file) => {
         formData.append("files", file);
       });
     }
@@ -74,13 +78,24 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
 
       const scanId = response.data.scanId;
       setScanId(scanId);
-      console.log("ScanId:-", scanId)
+      showToast("Scan workspace created successfully!", "success");
       onScanSuccess(scanId);
     } catch (error) {
-      console.error(
-        "Scan failed:",
-        error.response?.data || error.message
-      );
+      console.error("Scan failed:", error.response?.data || error.message);
+      const detail = error.response?.data?.detail;
+      const message = error.response?.data?.message || error.message;
+
+      let errText = "Failed to create scan workspace.";
+      if (error.code === "ERR_NETWORK" || error.message?.includes("Network Error")) {
+        errText = "Cannot connect to backend API server at http://localhost:5000. Please verify backend is running.";
+      } else if (detail) {
+        errText = typeof detail === "string" ? detail : JSON.stringify(detail);
+      } else if (message) {
+        errText = message;
+      }
+
+      setModalError(errText);
+      showToast(errText, "error");
       setIsSubmitting(false); 
     }
   };
@@ -106,6 +121,13 @@ const NewScanModal = ({ isOpen, onClose,onScanSuccess }) => {
         </div>
 
         <div className="modal-body">
+
+          {modalError && (
+            <div className="bg-red-950/50 border border-red-500/50 text-red-200 p-3 rounded-xl mb-4 text-xs flex items-center justify-between">
+              <span>{modalError}</span>
+              <button onClick={() => setModalError(null)} className="text-red-400 font-bold ml-2">✕</button>
+            </div>
+          )}
 
           {/* STEP 1: PROJECT NAME */}
           {step === 1 && (
