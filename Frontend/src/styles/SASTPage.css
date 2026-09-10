@@ -41,16 +41,25 @@
 /* TOP ROW LAYOUT */
 .analysis-top-row {
   display: grid;
-  grid-template-columns: 0.8fr 1.1fr 1.1fr; /* Adjusted for source column width */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
 }
 
 .analysis-col {
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 0; /* CRITICAL: Prevents grid column expansion so child can scroll horizontally */
+  width: 100%;
+}
+
+.analysis-col.full-width {
+  grid-column: span 2;
+  border-right: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .analysis-col:last-child { border-right: none; }
@@ -81,21 +90,30 @@
   font-family: 'Fira Code', Consolas, Monaco, monospace;
   font-size: 0.85rem;
   height: 100%;
-  overflow-x: auto;
+  overflow-x: auto !important;
+  overflow-y: hidden;
   max-width: 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 .code-block pre {
   margin: 0;
   padding: 0;
-  overflow-x: auto;
-  white-space: pre;
-  word-wrap: normal;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  display: block;
 }
 
 .code-block code {
   font-family: 'Fira Code', Consolas, Monaco, monospace;
-  white-space: pre;
+  white-space: pre !important;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  display: inline-block;
+  min-width: max-content;
 }
 
 .code-block::-webkit-scrollbar,
